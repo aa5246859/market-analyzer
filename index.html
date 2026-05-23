@@ -250,49 +250,51 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
   <div id="panel-signals" class="panel">
     <div class="metrics-grid">
       <div class="metric"><div class="metric-label">BTC 現價</div><div class="metric-value" id="s-btc">—</div><div class="metric-sub" id="s-btc-sub">即時</div></div>
-      <div class="metric"><div class="metric-label">ETF 近兩週</div><div class="metric-value dn">-$2B</div><div class="metric-sub">六週流入後反轉</div></div>
-      <div class="metric"><div class="metric-label">Bull Score</div><div class="metric-value dn">20</div><div class="metric-sub">極度看空 CryptoQuant</div></div>
+      <div class="metric"><div class="metric-label">ETF 5/11-15週</div><div class="metric-value dn">-$1B</div><div class="metric-sub">2月來最大週流出</div></div>
+      <div class="metric"><div class="metric-label">Fed 利率</div><div class="metric-value dn">3.50–3.75%</div><div class="metric-sub">升息討論升溫</div></div>
       <div class="metric"><div class="metric-label">Brent 油價</div><div class="metric-value" id="m-brent">—</div><div class="metric-sub" id="m-brent-sub">載入中</div></div>
     </div>
     <div class="two-col">
       <div>
-        <div class="section-heading">看空訊號</div>
+        <div class="section-heading">看空訊號 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">BTC 低於 STH 成本線</span><span class="signal-val">~$77K &lt; $79K</span><span class="signal-tag bear">短線虧損</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線拒絕</span><span class="signal-val">$82K — 7個月未站上</span><span class="signal-tag bear">熊市確認</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">ETF 近兩週流出</span><span class="signal-val">-$2B 反轉</span><span class="signal-tag bear">機構撤退</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CryptoQuant Bull Score</span><span class="signal-val">20 / 100</span><span class="signal-tag bear">極度看空</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">韓國 Kimchi 溢價</span><span class="signal-val">&lt; 0</span><span class="signal-tag bear">亞洲冷卻</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CPI / PPI</span><span class="signal-val">3.8% / 6.0%</span><span class="signal-tag bear">通膨黏著</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Brent 油價</span><span class="signal-val" id="sig-brent">—</span><span class="signal-tag neu" id="sig-brent-tag">—</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">BTC 低於 STH 成本線</span><span class="signal-val">$75K &lt; ~$79K</span><span class="signal-tag bear">短線虧損</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線（SMA200）</span><span class="signal-val">~$83K — 自2026/1未站上</span><span class="signal-tag bear">熊市確認</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">ETF 5/11-15 週流出</span><span class="signal-val">-$1B（2月來最大）</span><span class="signal-tag bear">機構撤退</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">六週流入後反轉</span><span class="signal-val">5/15 打破連流入</span><span class="signal-tag bear">動能轉弱</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CPI 4月 3.8%</span><span class="signal-val">2023/5來最高，能源+17.9%</span><span class="signal-tag bear">通膨黏著</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">Fed 升息討論升溫</span><span class="signal-val">8-4分裂票 / 98%不降息</span><span class="signal-tag bear">流動性收縮</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">伊朗衝突油價衝擊</span><span class="signal-val">Brent ~$120 / 汽油+28.4%</span><span class="signal-tag bear">能源通膨</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Brent 即時</span><span class="signal-val" id="sig-brent">—</span><span class="signal-tag" id="sig-brent-tag">—</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">S&amp;P 500 過熱</span><span class="signal-val" id="sig-sp500">—</span><span class="signal-tag neu" id="sig-sp500-tag">載入中</span></div>
         </div>
-        <div class="section-heading" style="margin-top:8px">看多訊號</div>
+        <div class="section-heading" style="margin-top:8px">看多訊號 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">128日均線守住</span><span class="signal-val">$75,700</span><span class="signal-tag bull">未破</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">減半供應壓縮</span><span class="signal-val">ETF 吸收 = 礦量 × 9</span><span class="signal-tag bull">結構性</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 無恐慌拋售</span><span class="signal-val">成本線 ~$48K</span><span class="signal-tag bull">穩健</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">NUPL 回升中</span><span class="signal-val">0.28（低點 0.19）</span><span class="signal-tag bull">底部區</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">401K 退休金管道</span><span class="signal-val">$46兆潛在資金</span><span class="signal-tag bull">長線結構</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fed 新主席 Warsh</span><span class="signal-val">BTC 支持者</span><span class="signal-tag neu">觀察</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">200週均線強支撐</span><span class="signal-val">~$59-61K（歷史從未跌破）</span><span class="signal-tag bull">長線底</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">減半供應壓縮</span><span class="signal-val">ETF 吸收量 = 新礦量 × 9</span><span class="signal-tag bull">結構性</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 無恐慌拋售</span><span class="signal-val">成本線 ~$48K，持倉穩定</span><span class="signal-tag bull">穩健</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">Strategy 平均成本</span><span class="signal-val">$75,537（818,334 BTC）</span><span class="signal-tag bull">接近現價</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">401K 退休金管道</span><span class="signal-val">DOL 2026/3 核准 / $46兆</span><span class="signal-tag bull">長線結構</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">4月 ETF 淨流入</span><span class="signal-val">$20億（2026最強月）</span><span class="signal-tag bull">機構基礎</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fed 主席 Warsh</span><span class="signal-val">BTC 支持者 / 新任</span><span class="signal-tag neu">觀察</span></div>
         </div>
       </div>
       <div>
-        <div class="section-heading">牛市啟動條件</div>
+        <div class="section-heading">牛市啟動條件 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">須同時滿足</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">週收站上 200日均線 $82K</span><span class="signal-tag neu">7個月未到</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">ETF 連5天 &gt;$200M 淨流入</span><span class="signal-tag neu">目前流出</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fear &amp; Greed &gt; 60</span><span class="signal-tag neu">現在 27</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Bull Score &gt; 60</span><span class="signal-tag neu">現在 20</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">週收站上 200日均線 ~$83K</span><span class="signal-val">自2026/1未到</span><span class="signal-tag neu">未到</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">ETF 週流入恢復正值</span><span class="signal-val">目前週流出中</span><span class="signal-tag neu">未到</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fear &amp; Greed 持續 &gt; 60</span><span class="signal-val" id="fg-signal">即時抓取中</span><span class="signal-tag neu">未到</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">CPI 連兩月下降趨勢</span><span class="signal-val">現在 3.8% 仍在升</span><span class="signal-tag neu">未到</span></div>
         </div>
-        <div class="section-heading" style="margin-top:8px">加速下殺條件</div>
+        <div class="section-heading" style="margin-top:8px">加速下殺條件 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">任一觸發需警戒</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破 128日均線 $75,700</span><span class="signal-tag bear">警戒</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破交易者成本線 $70,000</span><span class="signal-tag bear">加速下跌</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">ETF 連5天以上流出</span><span class="signal-tag bear">警戒</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">CPI 再升破 4%</span><span class="signal-tag bear">警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破 $73-74K FVG 支撐</span><span class="signal-val">下一技術支撐</span><span class="signal-tag bear">警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破 200週均線 $59-61K</span><span class="signal-val">歷史從未發生</span><span class="signal-tag bear">極端警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">CPI 升破 4%</span><span class="signal-val">Fed 升息機率大增</span><span class="signal-tag bear">警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Strategy 開始減持 BTC</span><span class="signal-val">現持 818,334 顆</span><span class="signal-tag bear">警戒</span></div>
         </div>
-        <button class="action-btn" onclick="ask('根據目前訊號：BTC低於STH$79K、200日均線$82K拒絕、ETF兩週流出$2B、Bull Score 20、韓國需求消失、CPI 3.8%。同時看多結構：128日均線$75.7K守住、LTH無拋售、減半壓縮。給出未來4週最可能的三個走勢場景和機率，每個場景的觸發條件和對應策略')">🤖 AI 解讀當前訊號 ↗</button>
+        <button class="action-btn" onclick="ask('根據最新訊號（2026/05/23）：BTC低於STH$79K、200日均線$83K自1月未站上、ETF5/15週流出$1B打破六週連流入、CPI 3.8%為2023/5來最高、Fed升息討論升溫、伊朗油價$120。同時看多結構：200週均線$59-61K歷史未破、Strategy持倉$75K成本、4月ETF流入$20億。給出未來4週最可能的三個走勢場景和機率，每個場景的觸發條件和對應策略')">🤖 AI 解讀當前訊號 ↗</button>
       </div>
     </div>
   </div>
@@ -557,7 +559,12 @@ async function fetchPrices(){
     const r=await fetch(proxy+encodeURIComponent('https://api.alternative.me/fng/?limit=1'));
     const fg=await r.json();
     const fgV=fg.data?.[0]?.value,fgL=fg.data?.[0]?.value_classification;
-    if(fgV){const fc=fgV<25?'dn':fgV<50?'neutral':'up';setM('m-fg',fgV,'m-fg-sub',fgL||'',fc);}
+    if(fgV){
+      const fc=fgV<25?'dn':fgV<50?'neutral':'up';
+      setM('m-fg',fgV,'m-fg-sub',fgL||'',fc);
+      const fgSig=document.getElementById('fg-signal');
+      if(fgSig)fgSig.textContent='現在 '+fgV+' / 需 >60';
+    }
   }catch(e){}
 
   // S&P 500 + Brent + MARA + MSTR via Yahoo Finance
