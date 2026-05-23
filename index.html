@@ -693,9 +693,9 @@ function renderPortfolio(){
     for(const ex of d.exits){
       const ttype=ex.type==='buy'?'bull':ex.type==='stop'?'bear':'neu';
       const tlabel=ex.type==='buy'?'加倉':ex.type==='stop'?'停損':'出場';
-      const currentP=PRICES[sym]||PRICES.ada;
+      const currentP=PRICES[sym];
       let dist='';
-      if(currentP&&ex.price){
+      if(currentP&&currentP>0&&ex.price&&ex.price>0){
         const pct=((ex.price-currentP)/currentP*100);
         dist=`<span style="font-size:10px;color:${pct>=0?'var(--green)':'var(--red)'}">${pct>=0?'↑':'↓'}${Math.abs(pct).toFixed(1)}%</span>`;
       }
