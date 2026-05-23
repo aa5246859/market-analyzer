@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>市場分析中心</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#999;--text3:#555;
+  --green:#22c87a;--red:#f05050;--amber:#f5a623;--accent:#e8e8e8;
+  --mono:'IBM Plex Mono',monospace;--sans:'Noto Sans TC',sans-serif;
+  --nav-h:56px;--sidebar-w:240px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.app-shell{display:flex;height:100dvh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:var(--mono);font-size:12px;color:var(--text2);letter-spacing:.08em;text-transform:uppercase}
+.logo-title{font-size:16px;font-weight:600;color:var(--accent);margin-top:4px}
+.sidebar-nav{padding:12px 8px;flex:1}
+.nav-section-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:8px 12px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:var(--sans)}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg4);color:var(--accent)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.main-header{height:52px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.header-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.header-title{font-size:15px;font-weight:600;color:var(--accent);flex:1}
+.refresh-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:var(--mono);transition:all .15s}
+.refresh-btn:hover{border-color:var(--border2);color:var(--text)}
+.refresh-btn.spinning{color:var(--amber)}
+.header-time{font-family:var(--mono);font-size:12px;color:var(--text2)}
+.main-content{flex:1;overflow-y:auto;padding:20px}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block}
+
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav-inner{display:flex;height:56px;align-items:center}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:var(--sans);padding:6px 0;transition:color .15s;-webkit-tap-highlight-color:transparent}
+.bnav-item.active{color:var(--accent)}
+.bnav-icon{font-size:20px;line-height:1}
+.bnav-label{font-size:10px;font-weight:500}
+
+/* COMPONENTS */
+.section-heading{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--text2);font-family:var(--mono);letter-spacing:.03em;margin-bottom:6px}
+.metric-value{font-size:20px;font-weight:600;font-family:var(--mono);color:var(--accent);line-height:1;margin-bottom:4px}
+.metric-sub{font-size:11px;color:var(--text2)}
+.up{color:var(--green)!important}.dn{color:var(--red)!important}.neutral{color:var(--amber)!important}
+
+.signal-list{margin-bottom:12px}
+.signal-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.signal-row:last-child{border-bottom:none}
+.signal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.signal-dot.bull{background:var(--green)}.signal-dot.bear{background:var(--red)}.signal-dot.neu{background:var(--amber)}
+.signal-name{flex:1;font-size:13px;color:var(--text)}
+.signal-val{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.signal-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
+.signal-tag.bull{background:rgba(34,200,122,.12);color:var(--green)}
+.signal-tag.bear{background:rgba(240,80,80,.12);color:var(--red)}
+.signal-tag.neu{background:rgba(245,166,35,.12);color:var(--amber)}
+
+.prompt-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.prompt-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--sans);text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;transition:background .15s;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.prompt-btn:hover{background:var(--bg4);border-color:var(--border2)}
+.prompt-btn:active{transform:scale(.98)}
+.action-btn{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--accent);font-size:13px;font-family:var(--sans);text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s;-webkit-tap-highlight-color:transparent;margin-top:10px}
+.action-btn:hover{background:var(--bg4)}
+
+.input-row{display:flex;gap:8px;margin-bottom:16px}
+.input-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--sans);color:var(--text);outline:none;transition:border-color .15s}
+.input-row input::placeholder{color:var(--text3)}
+.input-row input:focus{border-color:var(--border2)}
+.input-row button{background:var(--accent);color:var(--bg);border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:600;font-family:var(--sans);cursor:pointer;white-space:nowrap}
+
+.ai-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;min-height:140px;font-size:14px;line-height:1.75;color:var(--text)}
+.ai-box.empty{display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;font-style:italic}
+.ai-box.loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--text2);font-family:var(--mono)}
+.ai-box p{margin-bottom:10px}.ai-box p:last-child{margin-bottom:0}.ai-box strong{color:var(--accent);font-weight:600}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.chart-wrap{position:relative;width:100%;height:220px;margin-bottom:16px}
+
+/* PORTFOLIO ITEMS */
+.port-item{padding:12px 0;border-bottom:1px solid var(--border)}
+.port-item:last-child{border-bottom:none}
+.port-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.port-name{font-size:14px;font-weight:600;color:var(--accent)}
+.port-ticker{font-size:11px;color:var(--text2);font-family:var(--mono);margin-left:6px}
+.port-pnl{font-size:13px;font-weight:600;font-family:var(--mono)}
+.port-detail{font-size:12px;color:var(--text2);font-family:var(--mono);margin-bottom:6px}
+.progress{height:2px;background:var(--border);border-radius:2px}
+.progress-fill{height:100%;border-radius:2px;transition:width .3s}
+
+/* EXIT PLAN TABLE */
+.exit-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.exit-table th{text-align:left;color:var(--text3);font-weight:500;padding:4px 6px;border-bottom:1px solid var(--border);font-family:var(--mono)}
+.exit-table td{padding:7px 6px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--text2)}
+.exit-table td:first-child{color:var(--accent);font-weight:500}
+.exit-table tr:last-child td{border-bottom:none}
+.tag-sm{font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px}
+
+/* EDIT PANEL */
+.edit-section{margin-bottom:20px}
+.edit-title{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.field-item label{font-size:11px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:4px}
+.field-item input,.field-item select{background:transparent;border:none;border-bottom:1px solid var(--border2);padding:2px 0;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;width:100%}
+.field-item input:focus{border-bottom-color:var(--accent)}
+.exit-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.exit-row:last-child{border-bottom:none}
+.exit-row input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-family:var(--mono);color:var(--text);outline:none;width:90px}
+.exit-row input:focus{border-color:var(--accent)}
+.exit-row span{flex:1;font-size:12px;color:var(--text2)}
+.exit-row button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px}
+.exit-row button:hover{color:var(--red)}
+.add-exit-btn{background:none;border:1px dashed var(--border2);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--text3);cursor:pointer;width:100%;margin-top:8px;font-family:var(--sans);transition:all .15s}
+.add-exit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.save-indicator{font-size:12px;color:var(--green);font-family:var(--mono);text-align:center;height:16px;margin-top:8px}
+.full-save-btn{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:11px;font-size:13px;color:var(--accent);font-family:var(--sans);cursor:pointer;transition:background .15s;margin-top:12px}
+.full-save-btn:hover{background:var(--bg3)}
+
+/* CASH ITEMS */
+.cash-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.cash-row:last-child{border-bottom:none}
+.cash-name{font-size:13px;color:var(--text)}
+.cash-amt{font-size:13px;font-family:var(--mono);color:var(--accent)}
+.cash-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+.cash-del:hover{color:var(--red)}
+
+/* PATH */
+.price-path{display:flex;margin-bottom:16px}
+.path-node{flex:1;text-align:center;position:relative}
+.path-node::after{content:'';position:absolute;top:50%;right:-1px;width:2px;height:18px;transform:translateY(-50%);background:var(--border2)}
+.path-node:last-child::after{display:none}
+.path-price{font-family:var(--mono);font-size:12px;font-weight:500;padding:8px 2px 4px}
+.path-label{font-size:10px;color:var(--text2);padding-bottom:8px}
+.path-node.current .path-price{color:var(--amber)}
+.path-node.target .path-price{color:var(--green)}
+.path-node.atop .path-price{color:var(--red)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .bottom-nav{display:flex;flex-direction:column;justify-content:flex-start}
+  .main-content{padding:14px;padding-bottom:calc(56px + env(safe-area-inset-bottom) + 14px)}
+  .metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .prompt-grid{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr}
+  .main-header{padding:0 14px}
+  .metric-value{font-size:17px}
+  .field-grid{grid-template-columns:1fr}
+}
+@media(min-width:769px) and (max-width:1100px){
+  .metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .prompt-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1101px){
+  .metrics-grid{grid-template-columns:repeat(4,1fr)}
+  .prompt-grid{grid-template-columns:repeat(3,1fr)}
+}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">MARKET INTEL</div>
+    <div class="logo-title">市場分析中心</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">分析工具</div>
+    <button class="nav-item active" onclick="switchPanel('ai',this)"><span class="nav-icon">🤖</span>AI 即時分析</button>
+    <button class="nav-item" onclick="switchPanel('signals',this)"><span class="nav-icon">📡</span>訊號監控</button>
+    <button class="nav-item" onclick="switchPanel('btc',this)"><span class="nav-icon">₿</span>BTC 週期</button>
+    <div class="nav-section-label" style="margin-top:12px">我的帳戶</div>
+    <button class="nav-item" onclick="switchPanel('portfolio',this)"><span class="nav-icon">📊</span>持倉總覽</button>
+    <button class="nav-item" onclick="switchPanel('edit',this)"><span class="nav-icon">✏️</span>編輯持倉</button>
+  </nav>
+  <div class="sidebar-footer" id="footer-time">v2.3 · 即時數據<br>AI: Claude Sonnet 4</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="main-header">
+    <div class="header-dot"></div>
+    <div class="header-title" id="header-title">AI 即時分析</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="refresh-btn" id="refresh-btn" onclick="fetchPrices()">↻ 更新</button>
+      <div class="header-time" id="header-time"></div>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+  <!-- ══ PANEL: AI ══ -->
+  <div id="panel-ai" class="panel active">
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">BTC</div><div class="metric-value" id="m-btc">—</div><div class="metric-sub" id="m-btc-sub">載入中</div></div>
+      <div class="metric"><div class="metric-label">ADA</div><div class="metric-value" id="m-ada">—</div><div class="metric-sub" id="m-ada-sub">載入中</div></div>
+      <div class="metric"><div class="metric-label">Fear &amp; Greed</div><div class="metric-value" id="m-fg">—</div><div class="metric-sub" id="m-fg-sub">載入中</div></div>
+      <div class="metric"><div class="metric-label">S&amp;P 500</div><div class="metric-value" id="m-sp500">—</div><div class="metric-sub" id="m-sp500-sub">載入中</div></div>
+    </div>
+    <div class="section-heading">快速分析</div>
+    <div class="prompt-grid">
+      <button class="prompt-btn" onclick="ask('現在整體宏觀環境對BTC的影響：Fed政策、通膨、油價、ETF資金流向，給出當前週期判斷和未來8週走勢')"><span>🌐 宏觀 × BTC 週期</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('分析BTC技術面：200日均線$82K（7個月未站上）、STH成本線$79K（第四次衝關失敗）、128日均線$75.7K（守住）、鏈上交易者成本$70K（下一支撐）。判斷是否已底，底部確認訊號')"><span>📊 鏈上技術面</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('ADA現價$0.25在$0.24-0.28橫盤，成本$0.74持有112200顆浮虧67%。Node 11.0升級催化劑、ETF申請、支撐阻力、$1/$1.5/$2目標合理性，$0.18停損必要性')"><span>🔷 ADA 專項</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('MARA 1988股成本$8.26現在獲利中，Long Ridge AI/能源轉型故事。MSTR 6股成本$188等待$149/$122/$105加倉。分析兩者策略和BTC週期下的最優執行順序')"><span>💎 MSTR / MARA 策略</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('分析加密市場情緒：BTC恐懼貪婪27、ETF兩週流出$2B、CryptoQuant Bull Score 20、韓國Kimchi溢價<0。結合2018/2022熊市底部特徵，判斷現在週期位置，真正底部需要哪些指標組合')"><span>🧭 情緒 × 底部識別</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('分析目前看空訊號：200日均線壓力、ETF持續流出、CPI 3.8%/PPI 6%、韓國需求消失。以及看多結構：減半供應壓縮（ETF吸收=礦量×9）、401K開放、LTH無恐慌。給出綜合評分和未來走勢機率分佈')"><span>⚖️ 多空綜合評估</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+    </div>
+    <div class="section-heading">自訂問題</div>
+    <div class="input-row">
+      <input id="custom-q" type="text" placeholder="問任何市場問題..." onkeydown="if(event.key==='Enter')runCustom()">
+      <button onclick="runCustom()">送出</button>
+    </div>
+    <div id="ai-box" class="ai-box empty">選擇主題或輸入問題開始分析</div>
+  </div>
+
+  <!-- ══ PANEL: SIGNALS ══ -->
+  <div id="panel-signals" class="panel">
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">BTC 現價</div><div class="metric-value" id="s-btc">—</div><div class="metric-sub" id="s-btc-sub">即時</div></div>
+      <div class="metric"><div class="metric-label">ETF 近兩週</div><div class="metric-value dn">-$2B</div><div class="metric-sub">六週流入後反轉</div></div>
+      <div class="metric"><div class="metric-label">Bull Score</div><div class="metric-value dn">20</div><div class="metric-sub">極度看空 CryptoQuant</div></div>
+      <div class="metric"><div class="metric-label">Brent 油價</div><div class="metric-value" id="m-brent">—</div><div class="metric-sub" id="m-brent-sub">載入中</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="section-heading">看空訊號</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">BTC 低於 STH 成本線</span><span class="signal-val">~$77K &lt; $79K</span><span class="signal-tag bear">短線虧損</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線拒絕</span><span class="signal-val">$82K — 7個月未站上</span><span class="signal-tag bear">熊市確認</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">ETF 近兩週流出</span><span class="signal-val">-$2B 反轉</span><span class="signal-tag bear">機構撤退</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CryptoQuant Bull Score</span><span class="signal-val">20 / 100</span><span class="signal-tag bear">極度看空</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">韓國 Kimchi 溢價</span><span class="signal-val">&lt; 0</span><span class="signal-tag bear">亞洲冷卻</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CPI / PPI</span><span class="signal-val">3.8% / 6.0%</span><span class="signal-tag bear">通膨黏著</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Brent 油價</span><span class="signal-val" id="sig-brent">—</span><span class="signal-tag neu" id="sig-brent-tag">—</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">S&amp;P 500 過熱</span><span class="signal-val" id="sig-sp500">—</span><span class="signal-tag neu" id="sig-sp500-tag">載入中</span></div>
+        </div>
+        <div class="section-heading" style="margin-top:8px">看多訊號</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">128日均線守住</span><span class="signal-val">$75,700</span><span class="signal-tag bull">未破</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">減半供應壓縮</span><span class="signal-val">ETF 吸收 = 礦量 × 9</span><span class="signal-tag bull">結構性</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 無恐慌拋售</span><span class="signal-val">成本線 ~$48K</span><span class="signal-tag bull">穩健</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">NUPL 回升中</span><span class="signal-val">0.28（低點 0.19）</span><span class="signal-tag bull">底部區</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">401K 退休金管道</span><span class="signal-val">$46兆潛在資金</span><span class="signal-tag bull">長線結構</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fed 新主席 Warsh</span><span class="signal-val">BTC 支持者</span><span class="signal-tag neu">觀察</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-heading">牛市啟動條件</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">週收站上 200日均線 $82K</span><span class="signal-tag neu">7個月未到</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">ETF 連5天 &gt;$200M 淨流入</span><span class="signal-tag neu">目前流出</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Fear &amp; Greed &gt; 60</span><span class="signal-tag neu">現在 27</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Bull Score &gt; 60</span><span class="signal-tag neu">現在 20</span></div>
+        </div>
+        <div class="section-heading" style="margin-top:8px">加速下殺條件</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破 128日均線 $75,700</span><span class="signal-tag bear">警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">跌破交易者成本線 $70,000</span><span class="signal-tag bear">加速下跌</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">ETF 連5天以上流出</span><span class="signal-tag bear">警戒</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">CPI 再升破 4%</span><span class="signal-tag bear">警戒</span></div>
+        </div>
+        <button class="action-btn" onclick="ask('根據目前訊號：BTC低於STH$79K、200日均線$82K拒絕、ETF兩週流出$2B、Bull Score 20、韓國需求消失、CPI 3.8%。同時看多結構：128日均線$75.7K守住、LTH無拋售、減半壓縮。給出未來4週最可能的三個走勢場景和機率，每個場景的觸發條件和對應策略')">🤖 AI 解讀當前訊號 ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: BTC ══ -->
+  <div id="panel-btc" class="panel">
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">ATH</div><div class="metric-value">$126,198</div><div class="metric-sub">2025/10/06</div></div>
+      <div class="metric"><div class="metric-label">現價</div><div class="metric-value neutral" id="b-btc">—</div><div class="metric-sub" id="b-btc-sub">即時</div></div>
+      <div class="metric"><div class="metric-label">熊市週期</div><div class="metric-value">7.5月</div><div class="metric-sub">歷史中位 12月</div></div>
+      <div class="metric"><div class="metric-label">底部共識</div><div class="metric-value up">$60-68K</div><div class="metric-sub">Q3-Q4 2026</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="section-heading">底部情境機率</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="cycleChart" role="img" aria-label="BTC底部情境機率">機率分配圖。</canvas></div>
+        <div class="section-heading">週期路徑</div>
+        <div class="price-path">
+          <div class="path-node atop"><div class="path-price">$126K</div><div class="path-label">ATH 10/6/25</div></div>
+          <div class="path-node current"><div class="path-price" id="btc-path-price">—</div><div class="path-label">現在</div></div>
+          <div class="path-node target"><div class="path-price">$60-68K</div><div class="path-label">底部目標</div></div>
+          <div class="path-node target"><div class="path-price">$120-170K</div><div class="path-label">2027 目標</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-heading">關鍵價位（已驗證）</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線 SMA/EMA</span><span class="signal-val">$82,000–82,500</span><span class="signal-tag bear">7個月未站上</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">STH 成本線</span><span class="signal-val">~$79,000</span><span class="signal-tag bear">第四次衝關</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">心理關口</span><span class="signal-val">$80,000</span><span class="signal-tag bear">壓力</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">128日均線（守住中）</span><span class="signal-val">$75,700</span><span class="signal-tag neu">短期支撐</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">交易者鏈上成本線</span><span class="signal-val">$70,000</span><span class="signal-tag bear">下一支撐</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">2月低點</span><span class="signal-val">$60,000</span><span class="signal-tag bull">週期底部參考</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 成本線</span><span class="signal-val">~$48,000</span><span class="signal-tag bull">長線底部</span></div>
+        </div>
+        <div class="section-heading" style="margin-top:8px">MSTR 出場計畫（加倉後均價 ~$135）</div>
+        <div class="signal-list">
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$280–300</span><span class="signal-val">賣 25%</span><span class="signal-tag neu">+107%</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$350–400</span><span class="signal-val">賣 35%</span><span class="signal-tag bull">+163%</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$450+</span><span class="signal-val">賣 30%</span><span class="signal-tag bull">+233%</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">留倉</span><span class="signal-val">留 10% 長期</span><span class="signal-tag bull">持有</span></div>
+        </div>
+      </div>
+    </div>
+    <button class="action-btn" onclick="ask('BTC $77400，200日均線$82K（7個月未站上），STH$79K第四次衝關失敗，ETF兩週流出$2B，Bull Score 20，下一支撐$70K。對比2018和2022熊市，分析底部時間Q3還是Q4 2026，底部確認鏈上指標組合，MSTR $149和$122加倉點的風險報酬比')">🤖 深析 BTC 週期 × MSTR 加倉時機 ↗</button>
+  </div>
+
+  <!-- ══ PANEL: PORTFOLIO ══ -->
+  <div id="panel-portfolio" class="panel">
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">MARA 損益</div><div class="metric-value" id="mara-pnl-top">—</div><div class="metric-sub" id="mara-pnl-pct">即時</div></div>
+      <div class="metric"><div class="metric-label">MSTR 損益</div><div class="metric-value" id="mstr-pnl-top">—</div><div class="metric-sub" id="mstr-pnl-pct">即時</div></div>
+      <div class="metric"><div class="metric-label">ADA 損益</div><div class="metric-value dn" id="ada-pnl-top">—</div><div class="metric-sub" id="ada-pnl-pct">即時</div></div>
+      <div class="metric"><div class="metric-label">總損益</div><div class="metric-value" id="total-pnl-top">—</div><div class="metric-sub">三筆合計</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="section-heading">持倉明細</div>
+        <div class="card">
+          <!-- MARA -->
+          <div class="port-item">
+            <div class="port-top">
+              <div><span class="port-name">MARA</span><span class="port-ticker" id="mara-shares-label">— 股 · 成本 —</span></div>
+              <span class="port-pnl" id="mara-pnl-detail">—</span>
+            </div>
+            <div class="port-detail">現價 <span id="mara-price">—</span></div>
+            <div class="progress"><div class="progress-fill" id="mara-bar" style="width:0%"></div></div>
+          </div>
+          <!-- MSTR -->
+          <div class="port-item">
+            <div class="port-top">
+              <div><span class="port-name">MSTR</span><span class="port-ticker" id="mstr-shares-label">— 股 · 成本 —</span></div>
+              <span class="port-pnl" id="mstr-pnl-detail">—</span>
+            </div>
+            <div class="port-detail">現價 <span id="mstr-price">—</span></div>
+            <div class="progress"><div class="progress-fill" id="mstr-bar" style="width:0%"></div></div>
+          </div>
+          <!-- ADA -->
+          <div class="port-item">
+            <div class="port-top">
+              <div><span class="port-name">ADA</span><span class="port-ticker" id="ada-shares-label">— 顆 · 成本 —</span></div>
+              <span class="port-pnl dn" id="ada-pnl-detail">—</span>
+            </div>
+            <div class="port-detail">現價 <span id="ada-price">—</span></div>
+            <div class="progress"><div class="progress-fill" id="ada-bar" style="width:0%"></div></div>
+          </div>
+          <!-- CASH -->
+          <div class="port-item" id="cash-display-section">
+            <div class="port-top"><span class="port-name" style="font-size:13px">現金部位</span></div>
+            <div id="cash-display-list" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-heading">出場 / 加倉計畫</div>
+        <div class="card" id="exit-plan-display">
+          <!-- rendered by JS from storage -->
+        </div>
+        <button class="action-btn" id="portfolio-ai-btn" onclick="askPortfolio()">🤖 AI 分析我的完整策略 ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL: EDIT ══ -->
+  <div id="panel-edit" class="panel">
+    <div class="two-col">
+      <div>
+        <!-- MARA -->
+        <div class="edit-section">
+          <div class="edit-title">📈 MARA</div>
+          <div class="field-grid">
+            <div class="field-item"><label>股數</label><input type="number" id="e-mara-qty" placeholder="1988"></div>
+            <div class="field-item"><label>成本均價 $</label><input type="number" id="e-mara-cost" placeholder="8.26" step="0.01"></div>
+            <div class="field-item" style="grid-column:1/-1;background:rgba(34,200,122,0.06);border-color:rgba(34,200,122,0.2)">
+              <label>現價 $ <span style="color:var(--text3);font-weight:400">手動填入</span></label>
+              <input type="number" id="e-mara-price" placeholder="例：12.50" step="0.01">
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--text3);margin-bottom:6px;letter-spacing:.05em">出場計畫</div>
+          <div id="e-mara-exits"></div>
+          <button class="add-exit-btn" onclick="addExitRow('mara')">＋ 新增出場價位</button>
+        </div>
+
+        <!-- MSTR -->
+        <div class="edit-section">
+          <div class="edit-title">📈 MSTR</div>
+          <div class="field-grid">
+            <div class="field-item"><label>股數</label><input type="number" id="e-mstr-qty" placeholder="6"></div>
+            <div class="field-item"><label>成本均價 $</label><input type="number" id="e-mstr-cost" placeholder="188" step="0.01"></div>
+            <div class="field-item" style="grid-column:1/-1;background:rgba(34,200,122,0.06);border-color:rgba(34,200,122,0.2)">
+              <label>現價 $ <span style="color:var(--text3);font-weight:400">手動填入</span></label>
+              <input type="number" id="e-mstr-price" placeholder="例：175" step="0.01">
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--text3);margin-bottom:6px;letter-spacing:.05em">出場計畫（加倉完後均價 ~$135）</div>
+          <div id="e-mstr-exits"></div>
+          <button class="add-exit-btn" onclick="addExitRow('mstr')">＋ 新增出場價位</button>
+        </div>
+
+        <!-- ADA -->
+        <div class="edit-section">
+          <div class="edit-title">🔷 ADA <span style="font-size:11px;color:var(--green);font-weight:400">現價自動抓取</span></div>
+          <div class="field-grid">
+            <div class="field-item"><label>數量（顆）</label><input type="number" id="e-ada-qty" placeholder="112200"></div>
+            <div class="field-item"><label>成本均價 $</label><input type="number" id="e-ada-cost" placeholder="0.74" step="0.0001"></div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:var(--text3);margin-bottom:6px;letter-spacing:.05em">出場計畫</div>
+          <div id="e-ada-exits"></div>
+          <button class="add-exit-btn" onclick="addExitRow('ada')">＋ 新增出場價位</button>
+        </div>
+      </div>
+
+      <div>
+        <!-- CASH -->
+        <div class="edit-section">
+          <div class="edit-title">💵 現金部位</div>
+          <div id="e-cash-list" class="card" style="padding:8px 14px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input id="e-cash-name" type="text" placeholder="名稱（例：美股現金）" style="flex:1.5;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--sans);color:var(--text);outline:none">
+            <input id="e-cash-amt" type="number" placeholder="金額 $" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:var(--mono);color:var(--text);outline:none">
+            <button onclick="addCash()" style="background:var(--accent);color:var(--bg);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer">+</button>
+          </div>
+        </div>
+
+        <button class="full-save-btn" onclick="saveAll()">💾 儲存所有設定</button>
+        <div class="save-indicator" id="save-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /main-content -->
+</div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" onclick="switchPanel('ai',this)" data-panel="ai"><span class="bnav-icon">🤖</span><span class="bnav-label">AI</span></button>
+    <button class="bnav-item" onclick="switchPanel('signals',this)" data-panel="signals"><span class="bnav-icon">📡</span><span class="bnav-label">訊號</span></button>
+    <button class="bnav-item" onclick="switchPanel('btc',this)" data-panel="btc"><span class="bnav-icon">₿</span><span class="bnav-label">BTC</span></button>
+    <button class="bnav-item" onclick="switchPanel('portfolio',this)" data-panel="portfolio"><span class="bnav-icon">📊</span><span class="bnav-label">持倉</span></button>
+    <button class="bnav-item" onclick="switchPanel('edit',this)" data-panel="edit"><span class="bnav-icon">✏️</span><span class="bnav-label">編輯</span></button>
+  </div>
+</nav>
+
+<script>
+/* ══ NAV ══ */
+const TITLES={ai:'AI 即時分析',signals:'訊號監控板',btc:'BTC 週期分析',portfolio:'持倉總覽',edit:'編輯持倉'};
+function switchPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('header-title').textContent=TITLES[id];
+  document.querySelectorAll('.nav-item,.bnav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(id==='portfolio')renderPortfolio();
+  if(id==='edit')renderEditPanel();
+}
+
+function tick(){
+  const now=new Date();
+  document.getElementById('header-time').textContent=
+    now.toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit'})+' '+
+    now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+}
+tick();setInterval(tick,10000);
+
+/* ══ STORAGE ══ */
+const KEY='mkt_v3';
+let DB={
+  mara:{qty:1988,cost:8.26,price:null,exits:[{price:20,label:'賣 20%',type:'sell'},{price:24.5,label:'賣 50%',type:'sell'},{price:30,label:'賣 30%',type:'sell'}]},
+  mstr:{qty:6,cost:188,price:null,exits:[{price:280,label:'賣 25%（均價$135起算+107%）',type:'sell'},{price:375,label:'賣 35%（均價$135起算+163%）',type:'sell'},{price:450,label:'賣 30%（+233%）',type:'sell'},{price:0,label:'留 10% 長期持有',type:'sell'}]},
+  ada:{qty:112200,cost:0.74,exits:[{price:1.0,label:'賣 20%',type:'sell'},{price:1.5,label:'賣 30%',type:'sell'},{price:2.0,label:'賣 35%',type:'sell'},{price:3.0,label:'賣剩餘 15%',type:'sell'},{price:0.18,label:'停損換倉至MSTR',type:'stop'}]},
+  cash:[]
+};
+
+function loadDB(){
+  try{
+    const s=localStorage.getItem(KEY);
+    if(s){
+      const saved=JSON.parse(s);
+      // merge: keep defaults for any missing fields
+      ['mara','mstr','ada'].forEach(sym=>{
+        if(saved[sym]){
+          DB[sym].qty=saved[sym].qty||DB[sym].qty;
+          DB[sym].cost=saved[sym].cost||DB[sym].cost;
+          if(saved[sym].exits&&saved[sym].exits.length>0)DB[sym].exits=saved[sym].exits;
+        }
+      });
+      if(saved.cash)DB.cash=saved.cash;
+    }
+  }catch(e){}
+  // restore saved manual prices
+  ['mara','mstr','ada'].forEach(sym=>{if(DB[sym].price)PRICES[sym]=DB[sym].price;});
+}
+function saveDB(){
+  try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}
+}
+
+/* ══ PRICES ══ */
+let PRICES={btc:null,ada:null,mara:null,mstr:null,sp500:null,brent:null,fg:null};
+
+
+
+async function fetchPrices(){
+  const btn=document.getElementById('refresh-btn');
+  btn.classList.add('spinning');btn.textContent='↻ 更新中';
+
+  const proxy='https://corsproxy.io/?';
+
+  // BTC + ADA via CoinGecko
+  try{
+    const r=await fetch(proxy+encodeURIComponent('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,cardano&vs_currencies=usd&include_24hr_change=true'));
+    const cg=await r.json();
+    const btcP=cg.bitcoin?.usd,btcC=cg.bitcoin?.usd_24h_change;
+    const adaP=cg.cardano?.usd,adaC=cg.cardano?.usd_24h_change;
+    if(btcP){
+      PRICES.btc=btcP;
+      const s='$'+btcP.toLocaleString('en-US',{maximumFractionDigits:0});
+      const c=(btcC>=0?'+':'')+btcC.toFixed(1)+'%';
+      const cl=btcC>=0?'up':'dn';
+      setM('m-btc',s,'m-btc-sub',c,cl);
+      setM('s-btc',s,'s-btc-sub',c,cl);
+      const pe=document.getElementById('btc-path-price');if(pe)pe.textContent=s;
+      const be=document.getElementById('b-btc');if(be){be.textContent=s;be.className='metric-value '+(btcC>=0?'up':'dn');}
+      const bsub=document.getElementById('b-btc-sub');if(bsub)bsub.textContent='ATH -'+Math.abs(((btcP-126198)/126198*100)).toFixed(1)+'%';
+    }
+    if(adaP){
+      PRICES.ada=adaP;
+      setM('m-ada','$'+adaP.toFixed(4),'m-ada-sub',(adaC>=0?'+':'')+adaC.toFixed(1)+'%',adaC>=0?'up':'dn');
+      updateCryptoPnl();
+    }
+  }catch(e){}
+
+  // Fear & Greed
+  try{
+    const r=await fetch(proxy+encodeURIComponent('https://api.alternative.me/fng/?limit=1'));
+    const fg=await r.json();
+    const fgV=fg.data?.[0]?.value,fgL=fg.data?.[0]?.value_classification;
+    if(fgV){const fc=fgV<25?'dn':fgV<50?'neutral':'up';setM('m-fg',fgV,'m-fg-sub',fgL||'',fc);}
+  }catch(e){}
+
+  // S&P 500 + Brent via Yahoo Finance (works when hosted, not file://)
+  try{
+    const [spR,brR]=await Promise.all([
+      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=1d')),
+      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BZ%3DF?interval=1d&range=1d'))
+    ]);
+    const spD=await spR.json();
+    const brD=await brR.json();
+    const spP=spD?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    const spPrev=spD?.chart?.result?.[0]?.meta?.previousClose;
+    if(spP){
+      const c=((spP-spPrev)/spPrev*100);
+      const s=spP.toLocaleString('en-US',{maximumFractionDigits:0});
+      setM('m-sp500',s,'m-sp500-sub',(c>=0?'+':'')+c.toFixed(1)+'%',c>=0?'up':'dn');
+      const sp=document.getElementById('sig-sp500');if(sp)sp.textContent=s;
+      const st=document.getElementById('sig-sp500-tag');
+      if(st){st.textContent=c>=1?'過熱警示':c>=0?'高位整理':'修正中';st.className='signal-tag '+(c>=1?'bear':c>=0?'neu':'bull');}
+    }
+    const brP=brD?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    const brPrev=brD?.chart?.result?.[0]?.meta?.previousClose;
+    if(brP){
+      const c=((brP-brPrev)/brPrev*100);
+      const s='$'+brP.toFixed(1);
+      const bc=brP>100?'dn':brP>80?'neutral':'up';
+      setM('m-brent',s,'m-brent-sub',(c>=0?'+':'')+c.toFixed(1)+'%',bc);
+      const sb=document.getElementById('sig-brent');if(sb)sb.textContent=s+'/桶';
+      const sbt=document.getElementById('sig-brent-tag');
+      if(sbt){sbt.textContent=brP>100?'通膨壓力':brP>80?'偏高':'正常';sbt.className='signal-tag '+(brP>100?'bear':brP>80?'neu':'bull');}
+    }
+  }catch(e){}
+
+  // Stocks: use manually entered prices (編輯持倉)
+  updateTotalPnl();
+  renderPortfolio();
+
+  const now=new Date();
+  const ft=document.getElementById('footer-time');
+  if(ft)ft.innerHTML='v2.4 · '+now.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'<br>AI: Claude Sonnet 4';
+  btn.classList.remove('spinning');btn.textContent='↻ 更新';
+}
+
+function setM(vid,val,sid,sub,cls){
+  const v=document.getElementById(vid);const s=document.getElementById(sid);
+  if(v){v.textContent=val;v.className='metric-value '+(cls||'');}
+  if(s){s.textContent=sub;if(cls)s.className='metric-sub '+cls;}
+}
+
+function updateStockPnl(sym,price){
+  const d=DB[sym];
+  if(!d||!price)return;
+  const pnl=(price-d.cost)*d.qty;
+  const pct=(price-d.cost)/d.cost*100;
+  const cls=pnl>=0?'up':'dn';
+  const pnlStr=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' ('+pct.toFixed(1)+'%)';
+  const top=document.getElementById(sym+'-pnl-top');
+  const pctEl=document.getElementById(sym+'-pnl-pct');
+  if(top){top.textContent=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString();top.className='metric-value '+cls;}
+  if(pctEl){pctEl.textContent=pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
+  const det=document.getElementById(sym+'-pnl-detail');
+  if(det){det.textContent=pnlStr;det.className='port-pnl '+cls;}
+  const prEl=document.getElementById(sym+'-price');
+  if(prEl)prEl.textContent='$'+(sym==='mstr'?price.toFixed(0):price.toFixed(2));
+  const bar=document.getElementById(sym+'-bar');
+  if(bar){bar.style.width=Math.min(Math.abs(pct),100)+'%';bar.style.background=pnl>=0?'var(--green)':'var(--red)';}
+  const lbl=document.getElementById(sym+'-shares-label');
+  if(lbl)lbl.textContent=d.qty+(sym==='ada'?' 顆':' 股')+' · 成本 $'+d.cost;
+}
+
+function updateCryptoPnl(){
+  const p=PRICES.ada,d=DB.ada;
+  if(!p||!d)return;
+  const pnl=(p-d.cost)*d.qty;
+  const pct=(p-d.cost)/d.cost*100;
+  const cls=pnl>=0?'up':'dn';
+  const pnlStr=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' ('+pct.toFixed(1)+'%)';
+  const top=document.getElementById('ada-pnl-top');
+  if(top){top.textContent=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString();top.className='metric-value '+cls;top.dataset.raw=pnl;}
+  const pctEl=document.getElementById('ada-pnl-pct');
+  if(pctEl){pctEl.textContent=pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
+  const det=document.getElementById('ada-pnl-detail');
+  if(det){det.textContent=pnlStr;det.className='port-pnl '+cls;}
+  const prEl=document.getElementById('ada-price');if(prEl)prEl.textContent='$'+p.toFixed(4);
+  const bar=document.getElementById('ada-bar');
+  if(bar){bar.style.width=Math.min(Math.abs(pct),100)+'%';bar.style.background=pnl>=0?'var(--green)':'var(--red)';}
+  const lbl=document.getElementById('ada-shares-label');
+  if(lbl)lbl.textContent=d.qty.toLocaleString()+' 顆 · 成本 $'+d.cost;
+}
+
+function updateTotalPnl(){
+  const mara=PRICES.mara?(PRICES.mara-DB.mara.cost)*DB.mara.qty:0;
+  const mstr=PRICES.mstr?(PRICES.mstr-DB.mstr.cost)*DB.mstr.qty:0;
+  const ada=PRICES.ada?(PRICES.ada-DB.ada.cost)*DB.ada.qty:0;
+  const total=mara+mstr+ada;
+  const el=document.getElementById('total-pnl-top');
+  if(el){el.textContent=(total>=0?'+':'')+'$'+Math.round(Math.abs(total)).toLocaleString();el.className='metric-value '+(total>=0?'up':'dn');}
+}
+
+/* ══ PORTFOLIO RENDER ══ */
+function renderPortfolio(){
+  // cash display
+  const cl=document.getElementById('cash-display-list');
+  if(cl){
+    if(DB.cash.length===0){cl.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無現金項目</div>';}
+    else cl.innerHTML=DB.cash.map(c=>`<div class="cash-row"><span class="cash-name">${c.name}</span><span class="cash-amt">$${Number(c.amt).toLocaleString()}</span></div>`).join('');
+  }
+  // exit plan display
+  const ep=document.getElementById('exit-plan-display');
+  if(!ep)return;
+  const syms=['mara','mstr','ada'];
+  const symNames={mara:'MARA',mstr:'MSTR',ada:'ADA'};
+  let html='';
+  for(const sym of syms){
+    const d=DB[sym];
+    if(!d||!d.exits||d.exits.length===0)continue;
+    html+=`<div style="margin-bottom:14px"><div class="section-heading">${symNames[sym]}</div>`;
+    html+=`<table class="exit-table"><thead><tr><th>價位</th><th>動作</th><th>類型</th></tr></thead><tbody>`;
+    for(const ex of d.exits){
+      const ttype=ex.type==='buy'?'bull':ex.type==='stop'?'bear':'neu';
+      const tlabel=ex.type==='buy'?'加倉':ex.type==='stop'?'停損':'出場';
+      const currentP=PRICES[sym]||PRICES.ada;
+      let dist='';
+      if(currentP&&ex.price){
+        const pct=((ex.price-currentP)/currentP*100);
+        dist=`<span style="font-size:10px;color:${pct>=0?'var(--green)':'var(--red)'}">${pct>=0?'↑':'↓'}${Math.abs(pct).toFixed(1)}%</span>`;
+      }
+      html+=`<tr><td>$${ex.price}</td><td>${ex.label} ${dist}</td><td><span class="tag-sm signal-tag ${ttype}">${tlabel}</span></td></tr>`;
+    }
+    html+=`</tbody></table></div>`;
+  }
+  ep.innerHTML=html||'<div style="font-size:13px;color:var(--text3)">請至編輯持倉設定計畫</div>';
+}
+
+/* ══ EDIT PANEL ══ */
+function renderEditPanel(){
+  ['mara','mstr','ada'].forEach(sym=>{
+    const d=DB[sym];
+    const qEl=document.getElementById('e-'+sym+'-qty');
+    const cEl=document.getElementById('e-'+sym+'-cost');
+    const pEl=document.getElementById('e-'+sym+'-price');
+    if(qEl)qEl.value=d.qty;
+    if(cEl)cEl.value=d.cost;
+    if(pEl&&d.price)pEl.value=d.price;
+    renderExitRows(sym);
+  });
+  renderCashEdit();
+}
+
+function renderExitRows(sym){
+  const el=document.getElementById('e-'+sym+'-exits');
+  if(!el)return;
+  const exits=DB[sym].exits||[];
+  el.innerHTML=exits.map((ex,i)=>`
+    <div class="exit-row">
+      <span style="font-size:11px;color:var(--text3);width:28px">#${i+1}</span>
+      <input type="number" value="${ex.price}" step="${sym==='ada'?'0.01':'1'}" placeholder="價格 $" onchange="DB['${sym}'].exits[${i}].price=parseFloat(this.value)||0">
+      <input type="text" value="${ex.label}" placeholder="說明" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-family:var(--sans);color:var(--text);outline:none" onchange="DB['${sym}'].exits[${i}].label=this.value">
+      <select onchange="DB['${sym}'].exits[${i}].type=this.value" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 6px;font-size:12px;color:var(--text2);outline:none">
+        <option value="sell" ${ex.type==='sell'?'selected':''}>出場</option>
+        <option value="buy" ${ex.type==='buy'?'selected':''}>加倉</option>
+        <option value="stop" ${ex.type==='stop'?'selected':''}>停損</option>
+      </select>
+      <button onclick="deleteExitRow('${sym}',${i})">×</button>
+    </div>`).join('');
+}
+
+function addExitRow(sym){
+  DB[sym].exits.push({price:0,label:'',type:'sell'});
+  renderExitRows(sym);
+}
+
+function deleteExitRow(sym,i){
+  DB[sym].exits.splice(i,1);
+  renderExitRows(sym);
+}
+
+function renderCashEdit(){
+  const el=document.getElementById('e-cash-list');
+  if(!el)return;
+  if(DB.cash.length===0){el.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無現金項目</div>';return;}
+  el.innerHTML=DB.cash.map((c,i)=>`
+    <div class="cash-row">
+      <span class="cash-name">${c.name}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="cash-amt">$${Number(c.amt).toLocaleString()}</span>
+        <button class="cash-del" onclick="deleteCash(${i})">×</button>
+      </div>
+    </div>`).join('');
+}
+
+function addCash(){
+  const name=document.getElementById('e-cash-name').value.trim();
+  const amt=parseFloat(document.getElementById('e-cash-amt').value)||0;
+  if(!name||!amt)return;
+  DB.cash.push({name,amt});
+  document.getElementById('e-cash-name').value='';
+  document.getElementById('e-cash-amt').value='';
+  renderCashEdit();
+}
+
+function deleteCash(i){
+  DB.cash.splice(i,1);
+  renderCashEdit();
+}
+
+function saveAll(){
+  ['mara','mstr','ada'].forEach(sym=>{
+    const q=parseFloat(document.getElementById('e-'+sym+'-qty')?.value)||0;
+    const c=parseFloat(document.getElementById('e-'+sym+'-cost')?.value)||0;
+    const p=parseFloat(document.getElementById('e-'+sym+'-price')?.value)||0;
+    if(q)DB[sym].qty=q;
+    if(c)DB[sym].cost=c;
+    if(p){DB[sym].price=p;PRICES[sym]=p;}
+  });
+  saveDB();
+  const ind=document.getElementById('save-indicator');
+  if(ind){ind.textContent='✓ 已儲存';setTimeout(()=>ind.textContent='',2000);}
+  // update PnL with saved prices
+  if(PRICES.mara)updateStockPnl('mara',PRICES.mara);
+  if(PRICES.mstr)updateStockPnl('mstr',PRICES.mstr);
+  if(PRICES.ada)updateCryptoPnl();
+  else if(DB.ada.price){PRICES.ada=DB.ada.price;updateCryptoPnl();}
+  updateTotalPnl();
+  renderPortfolio();
+}
+
+/* ══ AI ══ */
+const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分析。背景（2026/05/22 已驗證）：
+
+【BTC 現況】
+- BTC ~$77,400，ATH $126,198（2025/10/06），熊市第7.5個月
+- 200日均線 $82,000–82,500，7個月未站上，本月再次拒絕
+- STH成本線 ~$79,000，第四次衝關失敗
+- 128日均線 $75,700（目前守住），鏈上交易者成本線 $70,000（下一支撐）
+- CryptoQuant Bull Score 20/100（極度看空），NUPL 0.28（回升中）
+- 底部共識：Q3-Q4 2026，$60-68K
+
+【ETF 數據】
+- 近兩週淨流出 -$2B（六週連流入後反轉）
+- 韓國 Kimchi 溢價 < 0
+
+【宏觀】
+- CPI 4月 3.8%，PPI 6%，Fed利率 3.50-3.75%，新主席Warsh（BTC支持者）
+- 2024減半：ETF每日吸收 = 新礦量×9
+- 美國DOL 2026/3 開放401K加密安全港，$46兆潛在資金
+
+規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
+
+async function callClaude(q){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:[{role:'user',content:q}]})
+  });
+  const d=await r.json();
+  return d.content?.[0]?.text||'分析失敗，請稍後再試。';
+}
+
+function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
+
+async function ask(q){
+  switchPanel('ai',document.querySelector('.nav-item[onclick*="ai"]'));
+  document.querySelector('.bnav-item[data-panel="ai"]')?.classList.add('active');
+  document.querySelectorAll('.bnav-item:not([data-panel="ai"])').forEach(n=>n.classList.remove('active'));
+  const box=document.getElementById('ai-box');
+  box.className='ai-box loading';
+  box.innerHTML='<div class="spinner"></div><div class="loading-txt">AI 分析中...</div>';
+  try{
+    const txt=await callClaude(q);
+    box.className='ai-box';box.innerHTML=fmtAI(txt);
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){box.className='ai-box';box.innerHTML='<p style="color:var(--red)">連線失敗，請稍後重試。</p>';}
+}
+
+function runCustom(){
+  const q=document.getElementById('custom-q').value.trim();
+  if(!q)return;ask(q);
+  document.getElementById('custom-q').value='';
+}
+
+function askPortfolio(){
+  const mp=PRICES.mara?'$'+PRICES.mara.toFixed(2):'—';
+  const sp=PRICES.mstr?'$'+PRICES.mstr.toFixed(0):'—';
+  const ap=PRICES.ada?'$'+PRICES.ada.toFixed(4):'—';
+  ask(`持倉即時：MARA ${DB.mara.qty}股成本$${DB.mara.cost}現價${mp}、MSTR ${DB.mstr.qty}股成本$${DB.mstr.cost}現價${sp}、ADA ${DB.ada.qty}顆成本$${DB.ada.cost}現價${ap}。根據BTC熊市第7.5個月、下一支撐$70K、底部共識Q3-Q4 2026，給出持倉行動優先順序：哪個先動、什麼條件動、MSTR加倉時機`);
+}
+
+/* ══ CHART ══ */
+new Chart(document.getElementById('cycleChart'),{
+  type:'doughnut',
+  data:{
+    labels:['Q3 2026底部 45%','已過（2月$60K）35%','Q4 延後 20%'],
+    datasets:[{data:[45,35,20],backgroundColor:['#22c87a','#888780','#f05050'],borderWidth:0,hoverOffset:6}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+    plugins:{legend:{position:'bottom',labels:{color:'#999',font:{size:11,family:"'IBM Plex Mono',monospace"},boxWidth:10,padding:10}},
+    tooltip:{callbacks:{label:ctx=>'  '+ctx.label+': '+ctx.raw+'%'}}}}
+});
+
+/* ══ INIT LABELS (show DB values immediately, before prices load) ══ */
+function initLabels(){
+  // MARA
+  const md=DB.mara;
+  let e=document.getElementById('mara-shares-label');if(e)e.textContent=md.qty+' 股 · 成本 $'+md.cost;
+  e=document.getElementById('mara-pnl-detail');if(e){e.textContent='價格載入中...';e.className='port-pnl neutral';}
+  e=document.getElementById('mara-price');if(e)e.textContent='—';
+  e=document.getElementById('mara-pnl-top');if(e){e.textContent='—';e.className='metric-value';}
+  e=document.getElementById('mara-pnl-pct');if(e){e.textContent='即時';e.className='metric-sub';}
+
+  // MSTR
+  const ms=DB.mstr;
+  e=document.getElementById('mstr-shares-label');if(e)e.textContent=ms.qty+' 股 · 成本 $'+ms.cost;
+  e=document.getElementById('mstr-pnl-detail');if(e){e.textContent='價格載入中...';e.className='port-pnl neutral';}
+  e=document.getElementById('mstr-price');if(e)e.textContent='—';
+  e=document.getElementById('mstr-pnl-top');if(e){e.textContent='—';e.className='metric-value';}
+  e=document.getElementById('mstr-pnl-pct');if(e){e.textContent='即時';e.className='metric-sub';}
+
+  // ADA
+  const ad=DB.ada;
+  e=document.getElementById('ada-shares-label');if(e)e.textContent=ad.qty.toLocaleString()+' 顆 · 成本 $'+ad.cost;
+  e=document.getElementById('ada-pnl-detail');if(e){e.textContent='價格載入中...';e.className='port-pnl neutral';}
+  e=document.getElementById('ada-price');if(e)e.textContent='—';
+  e=document.getElementById('ada-pnl-top');if(e){e.textContent='—';e.className='metric-value dn';}
+  e=document.getElementById('ada-pnl-pct');if(e){e.textContent='即時';e.className='metric-sub';}
+
+  // total
+  e=document.getElementById('total-pnl-top');if(e){e.textContent='載入中';e.className='metric-value neutral';}
+}
+loadDB();
+initLabels();
+renderPortfolio();
+fetchPrices();
+setInterval(fetchPrices,60000);
+</script>
+</body>
+</html>
