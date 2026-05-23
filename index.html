@@ -387,7 +387,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
         </div>
       </div>
       <div>
-        <div class="section-heading">出場 / 加倉計畫</div>
+        <div class="section-heading">出場計畫</div>
         <div class="card" id="exit-plan-display">
           <!-- rendered by JS from storage -->
         </div>
@@ -503,7 +503,7 @@ tick();setInterval(tick,10000);
 const KEY='mkt_v3';
 let DB={
   mara:{qty:1988,cost:8.26,price:null,exits:[{price:20,label:'賣 20%',type:'sell'},{price:24.5,label:'賣 50%',type:'sell'},{price:30,label:'賣 30%',type:'sell'}]},
-  mstr:{qty:6,cost:188,price:null,exits:[{price:280,label:'賣 25%（均價$135起算+107%）',type:'sell'},{price:375,label:'賣 35%（均價$135起算+163%）',type:'sell'},{price:450,label:'賣 30%（+233%）',type:'sell'},{price:0,label:'留 10% 長期持有',type:'sell'}]},
+  mstr:{qty:6,cost:188,price:null,exits:[{price:280,label:'賣 25%',type:'sell'},{price:375,label:'賣 35%',type:'sell'},{price:450,label:'賣 30%',type:'sell'},{price:0,label:'留 10% 長期持有',type:'sell'}]},
   ada:{qty:112200,cost:0.74,exits:[{price:1.0,label:'賣 20%',type:'sell'},{price:1.5,label:'賣 30%',type:'sell'},{price:2.0,label:'賣 35%',type:'sell'},{price:3.0,label:'賣剩餘 15%',type:'sell'},{price:0.18,label:'停損換倉至MSTR',type:'stop'}]},
   cash:[]
 };
@@ -574,20 +574,26 @@ async function fetchPrices(){
     if(fgV){const fc=fgV<25?'dn':fgV<50?'neutral':'up';setM('m-fg',fgV,'m-fg-sub',fgL||'',fc);}
   }catch(e){}
 
-  // S&P 500 + Brent via Yahoo Finance (works when hosted, not file://)
+  // S&P 500 + Brent + MARA + MSTR via Yahoo Finance
   try{
-    const [spR,brR]=await Promise.all([
+    const [spR,brR,maraR,mstrR]=await Promise.all([
       fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?interval=1d&range=1d')),
-      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BZ%3DF?interval=1d&range=1d'))
+      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BZ%3DF?interval=1d&range=1d')),
+      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/MARA?interval=1d&range=1d')),
+      fetch(proxy+encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/MSTR?interval=1d&range=1d'))
     ]);
     const spD=await spR.json();
     const brD=await brR.json();
+    const maraD=await maraR.json();
+    const mstrD=await mstrR.json();
+
     const spP=spD?.chart?.result?.[0]?.meta?.regularMarketPrice;
     const spPrev=spD?.chart?.result?.[0]?.meta?.previousClose;
     if(spP){
-      const c=((spP-spPrev)/spPrev*100);
+      const c=spPrev&&spPrev>0?((spP-spPrev)/spPrev*100):0;
       const s=spP.toLocaleString('en-US',{maximumFractionDigits:0});
-      setM('m-sp500',s,'m-sp500-sub',(c>=0?'+':'')+c.toFixed(1)+'%',c>=0?'up':'dn');
+      const sub=spPrev&&spPrev>0?(c>=0?'+':'')+c.toFixed(1)+'%':'即時';
+      setM('m-sp500',s,'m-sp500-sub',sub,c>=0?'up':'dn');
       const sp=document.getElementById('sig-sp500');if(sp)sp.textContent=s;
       const st=document.getElementById('sig-sp500-tag');
       if(st){st.textContent=c>=1?'過熱警示':c>=0?'高位整理':'修正中';st.className='signal-tag '+(c>=1?'bear':c>=0?'neu':'bull');}
@@ -595,7 +601,7 @@ async function fetchPrices(){
     const brP=brD?.chart?.result?.[0]?.meta?.regularMarketPrice;
     const brPrev=brD?.chart?.result?.[0]?.meta?.previousClose;
     if(brP){
-      const c=((brP-brPrev)/brPrev*100);
+      const c=brPrev&&brPrev>0?((brP-brPrev)/brPrev*100):0;
       const s='$'+brP.toFixed(1);
       const bc=brP>100?'dn':brP>80?'neutral':'up';
       setM('m-brent',s,'m-brent-sub',(c>=0?'+':'')+c.toFixed(1)+'%',bc);
@@ -603,6 +609,10 @@ async function fetchPrices(){
       const sbt=document.getElementById('sig-brent-tag');
       if(sbt){sbt.textContent=brP>100?'通膨壓力':brP>80?'偏高':'正常';sbt.className='signal-tag '+(brP>100?'bear':brP>80?'neu':'bull');}
     }
+    const maraP=maraD?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(maraP&&maraP>0){PRICES.mara=maraP;DB.mara.price=maraP;updateStockPnl('mara',maraP);}
+    const mstrP=mstrD?.chart?.result?.[0]?.meta?.regularMarketPrice;
+    if(mstrP&&mstrP>0){PRICES.mstr=mstrP;DB.mstr.price=mstrP;updateStockPnl('mstr',mstrP);}
   }catch(e){}
 
   // Stocks: use manually entered prices (編輯持倉)
@@ -688,18 +698,14 @@ function renderPortfolio(){
   for(const sym of syms){
     const d=DB[sym];
     if(!d||!d.exits||d.exits.length===0)continue;
-    html+=`<div style="margin-bottom:14px"><div class="section-heading">${symNames[sym]}</div>`;
+    html+=`<div style="margin-bottom:14px"><div class="section-heading">${symNames[sym]} 出場計畫</div>`;
     html+=`<table class="exit-table"><thead><tr><th>價位</th><th>動作</th><th>類型</th></tr></thead><tbody>`;
     for(const ex of d.exits){
       const ttype=ex.type==='buy'?'bull':ex.type==='stop'?'bear':'neu';
       const tlabel=ex.type==='buy'?'加倉':ex.type==='stop'?'停損':'出場';
-      const currentP=PRICES[sym];
-      let dist='';
-      if(currentP&&currentP>0&&ex.price&&ex.price>0){
-        const pct=((ex.price-currentP)/currentP*100);
-        dist=`<span style="font-size:10px;color:${pct>=0?'var(--green)':'var(--red)'}">${pct>=0?'↑':'↓'}${Math.abs(pct).toFixed(1)}%</span>`;
-      }
-      html+=`<tr><td>$${ex.price}</td><td>${ex.label} ${dist}</td><td><span class="tag-sm signal-tag ${ttype}">${tlabel}</span></td></tr>`;
+      // only show label, no percentage distance
+      const label=ex.label.replace(/（均價.*?）/g,'').replace(/\(\+.*?\)/g,'').trim();
+      html+=`<tr><td>$${ex.price||'—'}</td><td>${label}</td><td><span class="tag-sm signal-tag ${ttype}">${tlabel}</span></td></tr>`;
     }
     html+=`</tbody></table></div>`;
   }
@@ -768,9 +774,11 @@ function addCash(){
   const amt=parseFloat(document.getElementById('e-cash-amt').value)||0;
   if(!name||!amt)return;
   DB.cash.push({name,amt});
+  saveDB();
   document.getElementById('e-cash-name').value='';
   document.getElementById('e-cash-amt').value='';
   renderCashEdit();
+  renderPortfolio();
 }
 
 function deleteCash(i){
@@ -822,12 +830,10 @@ const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分
 規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
 
 async function callClaude(q){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:[{role:'user',content:q}]})
-  });
-  const d=await r.json();
-  return d.content?.[0]?.text||'分析失敗，請稍後再試。';
+  // Claude API cannot be called directly from browser (CORS + key security)
+  // Copy question to clipboard and open Claude
+  await navigator.clipboard.writeText(q).catch(()=>{});
+  return null;
 }
 
 function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
@@ -837,13 +843,19 @@ async function ask(q){
   document.querySelector('.bnav-item[data-panel="ai"]')?.classList.add('active');
   document.querySelectorAll('.bnav-item:not([data-panel="ai"])').forEach(n=>n.classList.remove('active'));
   const box=document.getElementById('ai-box');
-  box.className='ai-box loading';
-  box.innerHTML='<div class="spinner"></div><div class="loading-txt">AI 分析中...</div>';
-  try{
-    const txt=await callClaude(q);
-    box.className='ai-box';box.innerHTML=fmtAI(txt);
-    box.scrollIntoView({behavior:'smooth',block:'nearest'});
-  }catch(e){box.className='ai-box';box.innerHTML='<p style="color:var(--red)">連線失敗，請稍後重試。</p>';}
+
+  // Copy to clipboard
+  try{await navigator.clipboard.writeText(q);}catch(e){}
+
+  box.className='ai-box';
+  box.innerHTML=`
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:28px;margin-bottom:12px">📋</div>
+      <div style="font-size:14px;color:var(--accent);font-weight:600;margin-bottom:8px">問題已複製到剪貼簿</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">貼到 Claude 對話即可獲得分析<br>（這個 App 的 AI 分析由 Claude.ai 提供）</div>
+      <a href="https://claude.ai" target="_blank" style="display:inline-block;background:var(--accent);color:var(--bg);text-decoration:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600">開啟 Claude.ai ↗</a>
+    </div>
+    <div style="margin-top:16px;padding:12px 14px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;font-family:var(--mono)">${q.slice(0,200)}...</div>`;
 }
 
 function runCustom(){
