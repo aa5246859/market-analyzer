@@ -301,7 +301,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
   <div id="panel-btc" class="panel">
     <div class="metrics-grid">
       <div class="metric"><div class="metric-label">ATH</div><div class="metric-value">$126,198</div><div class="metric-sub">2025/10/06</div></div>
-      <div class="metric"><div class="metric-label">現價</div><div class="metric-value neutral" id="b-btc">—</div><div class="metric-sub" id="b-btc-sub">即時</div></div>
+      <div class="metric"><div class="metric-label">現價</div><div class="metric-value" id="b-btc">—</div><div class="metric-sub" id="b-btc-sub">即時</div></div>
       <div class="metric"><div class="metric-label">熊市週期</div><div class="metric-value">7.5月</div><div class="metric-sub">歷史中位 12月</div></div>
       <div class="metric"><div class="metric-label">底部共識</div><div class="metric-value up">$60-68K</div><div class="metric-sub">Q3-Q4 2026</div></div>
     </div>
@@ -328,13 +328,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">2月低點</span><span class="signal-val">$60,000</span><span class="signal-tag bull">週期底部參考</span></div>
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 成本線</span><span class="signal-val">~$48,000</span><span class="signal-tag bull">長線底部</span></div>
         </div>
-        <div class="section-heading" style="margin-top:8px">MSTR 出場計畫</div>
-        <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$280–300</span><span class="signal-val">賣 25%</span><span class="signal-tag neu">+107%</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$350–400</span><span class="signal-val">賣 35%</span><span class="signal-tag bull">+163%</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$450+</span><span class="signal-val">賣 30%</span><span class="signal-tag bull">+233%</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">留倉</span><span class="signal-val">留 10% 長期</span><span class="signal-tag bull">持有</span></div>
-        </div>
+
       </div>
     </div>
     <button class="action-btn" onclick="ask('BTC $77400，200日均線$82K（7個月未站上），STH$79K第四次衝關失敗，ETF兩週流出$2B，Bull Score 20，下一支撐$70K。對比2018和2022熊市，分析底部時間Q3還是Q4 2026，底部確認鏈上指標組合，MSTR $149和$122加倉點的風險報酬比')">🤖 深析 BTC 週期 × MSTR 加倉時機 ↗</button>
@@ -548,7 +542,7 @@ async function fetchPrices(){
       setM('m-btc',s,'m-btc-sub',c,cl);
       setM('s-btc',s,'s-btc-sub',c,cl);
       const pe=document.getElementById('btc-path-price');if(pe)pe.textContent=s;
-      const be=document.getElementById('b-btc');if(be){be.textContent=s;be.className='metric-value '+(btcC>=0?'up':'dn');}
+      const be=document.getElementById('b-btc');if(be){be.textContent=s;be.className='metric-value';}
       const bsub=document.getElementById('b-btc-sub');if(bsub)bsub.textContent='ATH -'+Math.abs(((btcP-126198)/126198*100)).toFixed(1)+'%';
     }
     if(adaP){
@@ -823,10 +817,17 @@ const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分
 
 規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
 
+const CLAUDE_KEY='YOUR_API_KEY_HERE';
+
 async function callClaude(q){
   const r=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':CLAUDE_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:[{role:'user',content:q}]})
   });
   if(!r.ok)throw new Error('API '+r.status);
@@ -870,11 +871,11 @@ function askPortfolio(){
 new Chart(document.getElementById('cycleChart'),{
   type:'doughnut',
   data:{
-    labels:['Q3 2026底部 45%','已過（2月$60K）35%','Q4 延後 20%'],
+    labels:['Q3 2026 底部','底部已過','Q4 延後'],
     datasets:[{data:[45,35,20],backgroundColor:['#22c87a','#888780','#f05050'],borderWidth:0,hoverOffset:6}]
   },
   options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-    plugins:{legend:{position:'bottom',labels:{color:'#999',font:{size:11,family:"'IBM Plex Mono',monospace"},boxWidth:10,padding:10}},
+    plugins:{legend:{position:'bottom',onClick:()=>{},labels:{color:'#999',font:{size:11,family:"'IBM Plex Mono',monospace"},boxWidth:10,padding:10}},
     tooltip:{callbacks:{label:ctx=>'  '+ctx.label+': '+ctx.raw+'%'}}}}
 });
 
