@@ -328,7 +328,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">2月低點</span><span class="signal-val">$60,000</span><span class="signal-tag bull">週期底部參考</span></div>
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 成本線</span><span class="signal-val">~$48,000</span><span class="signal-tag bull">長線底部</span></div>
         </div>
-        <div class="section-heading" style="margin-top:8px">MSTR 出場計畫（加倉後均價 ~$135）</div>
+        <div class="section-heading" style="margin-top:8px">MSTR 出場計畫</div>
         <div class="signal-list">
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$280–300</span><span class="signal-val">賣 25%</span><span class="signal-tag neu">+107%</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">$350–400</span><span class="signal-val">賣 35%</span><span class="signal-tag bull">+163%</span></div>
@@ -619,8 +619,16 @@ async function fetchPrices(){
 
 function setM(vid,val,sid,sub,cls){
   const v=document.getElementById(vid);const s=document.getElementById(sid);
-  if(v){v.textContent=val;v.className='metric-value '+(cls||'');}
+  if(v){v.textContent=val;v.className='metric-value';}
   if(s){s.textContent=sub;if(cls)s.className='metric-sub '+cls;}
+}
+
+function pnlStr(pnl,pct){
+  const sign=pnl>=0?'+':'-';
+  return sign+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' ('+pct.toFixed(1)+'%)';
+}
+function pnlShort(pnl){
+  return (pnl>=0?'+':'-')+'$'+Math.round(Math.abs(pnl)).toLocaleString();
 }
 
 function updateStockPnl(sym,price){
@@ -629,13 +637,12 @@ function updateStockPnl(sym,price){
   const pnl=(price-d.cost)*d.qty;
   const pct=(price-d.cost)/d.cost*100;
   const cls=pnl>=0?'up':'dn';
-  const pnlStr=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' ('+pct.toFixed(1)+'%)';
   const top=document.getElementById(sym+'-pnl-top');
   const pctEl=document.getElementById(sym+'-pnl-pct');
-  if(top){top.textContent=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString();top.className='metric-value '+cls;}
-  if(pctEl){pctEl.textContent=pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
+  if(top){top.textContent=pnlShort(pnl);top.className='metric-value '+cls;}
+  if(pctEl){pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
   const det=document.getElementById(sym+'-pnl-detail');
-  if(det){det.textContent=pnlStr;det.className='port-pnl '+cls;}
+  if(det){det.textContent=pnlStr(pnl,pct);det.className='port-pnl '+cls;}
   const prEl=document.getElementById(sym+'-price');
   if(prEl)prEl.textContent='$'+(sym==='mstr'?price.toFixed(0):price.toFixed(2));
   const bar=document.getElementById(sym+'-bar');
@@ -650,13 +657,12 @@ function updateCryptoPnl(){
   const pnl=(p-d.cost)*d.qty;
   const pct=(p-d.cost)/d.cost*100;
   const cls=pnl>=0?'up':'dn';
-  const pnlStr=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' ('+pct.toFixed(1)+'%)';
   const top=document.getElementById('ada-pnl-top');
-  if(top){top.textContent=(pnl>=0?'+':'')+'$'+Math.round(Math.abs(pnl)).toLocaleString();top.className='metric-value '+cls;top.dataset.raw=pnl;}
+  if(top){top.textContent=pnlShort(pnl);top.className='metric-value '+cls;top.dataset.raw=pnl;}
   const pctEl=document.getElementById('ada-pnl-pct');
-  if(pctEl){pctEl.textContent=pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
+  if(pctEl){pctEl.textContent=(pct>=0?'+':'')+pct.toFixed(1)+'%';pctEl.className='metric-sub '+cls;}
   const det=document.getElementById('ada-pnl-detail');
-  if(det){det.textContent=pnlStr;det.className='port-pnl '+cls;}
+  if(det){det.textContent=pnlStr(pnl,pct);det.className='port-pnl '+cls;}
   const prEl=document.getElementById('ada-price');if(prEl)prEl.textContent='$'+p.toFixed(4);
   const bar=document.getElementById('ada-bar');
   if(bar){bar.style.width=Math.min(Math.abs(pct),100)+'%';bar.style.background=pnl>=0?'var(--green)':'var(--red)';}
@@ -670,7 +676,7 @@ function updateTotalPnl(){
   const ada=PRICES.ada?(PRICES.ada-DB.ada.cost)*DB.ada.qty:0;
   const total=mara+mstr+ada;
   const el=document.getElementById('total-pnl-top');
-  if(el){el.textContent=(total>=0?'+':'')+'$'+Math.round(Math.abs(total)).toLocaleString();el.className='metric-value '+(total>=0?'up':'dn');}
+  if(el){el.textContent=pnlShort(total);el.className='metric-value '+(total>=0?'up':'dn');}
 }
 
 /* ══ PORTFOLIO RENDER ══ */
@@ -818,10 +824,14 @@ const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分
 規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
 
 async function callClaude(q){
-  // Claude API cannot be called directly from browser (CORS + key security)
-  // Copy question to clipboard and open Claude
-  await navigator.clipboard.writeText(q).catch(()=>{});
-  return null;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:[{role:'user',content:q}]})
+  });
+  if(!r.ok)throw new Error('API '+r.status);
+  const d=await r.json();
+  return d.content?.[0]?.text||'分析失敗，請稍後再試。';
 }
 
 function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
@@ -831,19 +841,16 @@ async function ask(q){
   document.querySelector('.bnav-item[data-panel="ai"]')?.classList.add('active');
   document.querySelectorAll('.bnav-item:not([data-panel="ai"])').forEach(n=>n.classList.remove('active'));
   const box=document.getElementById('ai-box');
-
-  // Copy to clipboard
-  try{await navigator.clipboard.writeText(q);}catch(e){}
-
-  box.className='ai-box';
-  box.innerHTML=`
-    <div style="text-align:center;padding:20px 0">
-      <div style="font-size:28px;margin-bottom:12px">📋</div>
-      <div style="font-size:14px;color:var(--accent);font-weight:600;margin-bottom:8px">問題已複製到剪貼簿</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">貼到 Claude 對話即可獲得分析<br>（這個 App 的 AI 分析由 Claude.ai 提供）</div>
-      <a href="https://claude.ai" target="_blank" style="display:inline-block;background:var(--accent);color:var(--bg);text-decoration:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600">開啟 Claude.ai ↗</a>
-    </div>
-    <div style="margin-top:16px;padding:12px 14px;background:var(--bg3);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;font-family:var(--mono)">${q.slice(0,200)}...</div>`;
+  box.className='ai-box loading';
+  box.innerHTML='<div class="spinner"></div><div class="loading-txt">AI 分析中...</div>';
+  try{
+    const txt=await callClaude(q);
+    box.className='ai-box';box.innerHTML=fmtAI(txt);
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){
+    box.className='ai-box';
+    box.innerHTML='<p style="color:var(--red)">連線失敗，請稍後重試。</p>';
+  }
 }
 
 function runCustom(){
