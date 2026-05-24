@@ -232,7 +232,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
     <div class="section-heading">快速分析</div>
     <div class="prompt-grid">
       <button class="prompt-btn" onclick="ask('現在整體宏觀環境對BTC的影響：Fed政策、通膨、油價、ETF資金流向，給出當前週期判斷和未來8週走勢')"><span>🌐 宏觀 × BTC 週期</span><span style="color:var(--text3);font-size:12px">↗</span></button>
-      <button class="prompt-btn" onclick="ask('分析BTC技術面：200日均線$82K（7個月未站上）、STH成本線$79K（第四次衝關失敗）、128日均線$75.7K（守住）、鏈上交易者成本$70K（下一支撐）。判斷是否已底，底部確認訊號')"><span>📊 鏈上技術面</span><span style="color:var(--text3);font-size:12px">↗</span></button>
+      <button class="prompt-btn" onclick="ask('分析BTC技術面：200日均線$83K（自2026/1未站上）、STH成本線$79K（第四次衝關失敗）、128日均線$75.7K（守住）、鏈上交易者成本$70K（下一支撐）。判斷是否已底，底部確認訊號')"><span>📊 鏈上技術面</span><span style="color:var(--text3);font-size:12px">↗</span></button>
       <button class="prompt-btn" onclick="ask('ADA現價$0.25在$0.24-0.28橫盤，成本$0.74持有112200顆浮虧67%。Node 11.0升級催化劑、ETF申請、支撐阻力、$1/$1.5/$2目標合理性，$0.18停損必要性')"><span>🔷 ADA 專項</span><span style="color:var(--text3);font-size:12px">↗</span></button>
       <button class="prompt-btn" onclick="ask('MARA 1988股成本$8.26現在獲利中，Long Ridge AI/能源轉型故事。MSTR 6股成本$188等待$149/$122/$105加倉。分析兩者策略和BTC週期下的最優執行順序')"><span>💎 MSTR / MARA 策略</span><span style="color:var(--text3);font-size:12px">↗</span></button>
       <button class="prompt-btn" onclick="ask('分析加密市場情緒：BTC恐懼貪婪27、ETF兩週流出$2B、CryptoQuant Bull Score 20、韓國Kimchi溢價<0。結合2018/2022熊市底部特徵，判斷現在週期位置，真正底部需要哪些指標組合')"><span>🧭 情緒 × 底部識別</span><span style="color:var(--text3);font-size:12px">↗</span></button>
@@ -256,19 +256,19 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
     </div>
     <div class="two-col">
       <div>
-        <div class="section-heading">看空訊號 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
+        <div class="section-heading">看空訊號 <span class="sig-update-date" style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">BTC 低於 STH 成本線</span><span class="signal-val">$75K &lt; ~$79K</span><span class="signal-tag bear">短線虧損</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線（SMA200）</span><span class="signal-val">~$83K — 自2026/1未站上</span><span class="signal-tag bear">熊市確認</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">ETF 5/11-15 週流出</span><span class="signal-val">-$1B（2月來最大）</span><span class="signal-tag bear">機構撤退</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">BTC 低於 STH 成本線</span><span class="signal-val" id="sig-sth">$75K &lt; ~$79K</span><span class="signal-tag bear">短線虧損</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線（SMA200）</span><span class="signal-val" id="sig-ma200">~$83K — 自2026/1未站上</span><span class="signal-tag bear">熊市確認</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">ETF 5/11-15 週流出</span><span class="signal-val" id="sig-etf">-$1B（2月來最大）</span><span class="signal-tag bear">機構撤退</span></div>
           <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">六週流入後反轉</span><span class="signal-val">5/15 打破連流入</span><span class="signal-tag bear">動能轉弱</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CPI 4月 3.8%</span><span class="signal-val">2023/5來最高，能源+17.9%</span><span class="signal-tag bear">通膨黏著</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">Fed 升息討論升溫</span><span class="signal-val">8-4分裂票 / 98%不降息</span><span class="signal-tag bear">流動性收縮</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">CPI 4月 3.8%</span><span class="signal-val" id="sig-cpi">2023/5來最高，能源+17.9%</span><span class="signal-tag bear">通膨黏著</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">Fed 升息討論升溫</span><span class="signal-val" id="sig-fed">8-4分裂票 / 98%不降息</span><span class="signal-tag bear">流動性收縮</span></div>
           <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">伊朗衝突油價衝擊</span><span class="signal-val">Brent ~$120 / 汽油+28.4%</span><span class="signal-tag bear">能源通膨</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Brent 即時</span><span class="signal-val" id="sig-brent">—</span><span class="signal-tag" id="sig-brent-tag">—</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">S&amp;P 500 過熱</span><span class="signal-val" id="sig-sp500">—</span><span class="signal-tag neu" id="sig-sp500-tag">載入中</span></div>
         </div>
-        <div class="section-heading" style="margin-top:8px">看多訊號 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
+        <div class="section-heading" style="margin-top:8px">看多訊號 <span class="sig-update-date" style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
         <div class="signal-list">
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">200週均線強支撐</span><span class="signal-val">~$59-61K（歷史從未跌破）</span><span class="signal-tag bull">長線底</span></div>
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">減半供應壓縮</span><span class="signal-val">ETF 吸收量 = 新礦量 × 9</span><span class="signal-tag bull">結構性</span></div>
@@ -294,7 +294,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">CPI 升破 4%</span><span class="signal-val">Fed 升息機率大增</span><span class="signal-tag bear">警戒</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">Strategy 開始減持 BTC</span><span class="signal-val">現持 818,334 顆</span><span class="signal-tag bear">警戒</span></div>
         </div>
-        <button class="action-btn" onclick="ask('根據最新訊號（2026/05/23）：BTC低於STH$79K、200日均線$83K自1月未站上、ETF5/15週流出$1B打破六週連流入、CPI 3.8%為2023/5來最高、Fed升息討論升溫、伊朗油價$120。同時看多結構：200週均線$59-61K歷史未破、Strategy持倉$75K成本、4月ETF流入$20億。給出未來4週最可能的三個走勢場景和機率，每個場景的觸發條件和對應策略')">🤖 AI 解讀當前訊號 ↗</button>
+        <button class="action-btn" onclick="ask('根據最新訊號（2026/05/23已驗證）：BTC現價即時更新中，STH成本線$79K第四次衝關失敗，200日均線$83K自2026/1未站上，2026/2低點$62K，ETF 5/11-15週流出$1B打破六週連流入，CPI 4月3.8%為2023/5來最高能源佔漲幅40%，Fed 8-4分裂票升息討論升溫，Brent油價持高。看多：200週均線$59-61K歷史未破，Strategy平均成本$75537持有818334顆，4月ETF流入$20億，401K管道開放。請分析：1)未來4週三個走勢場景和機率 2)每個場景觸發條件 3)對MARA/ADA持倉的對應操作')">🤖 AI 解讀當前訊號 ↗</button>
       </div>
     </div>
   </div>
@@ -304,7 +304,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
     <div class="metrics-grid">
       <div class="metric"><div class="metric-label">ATH</div><div class="metric-value">$126,198</div><div class="metric-sub">2025/10/06</div></div>
       <div class="metric"><div class="metric-label">現價</div><div class="metric-value" id="b-btc">—</div><div class="metric-sub" id="b-btc-sub">即時</div></div>
-      <div class="metric"><div class="metric-label">熊市週期</div><div class="metric-value">7.5月</div><div class="metric-sub">歷史中位 12月</div></div>
+      <div class="metric"><div class="metric-label">熊市週期</div><div class="metric-value">7.5月</div><div class="metric-sub">歷史中位 12-14月</div></div>
       <div class="metric"><div class="metric-label">底部共識</div><div class="metric-value up">$60-68K</div><div class="metric-sub">Q3-Q4 2026</div></div>
     </div>
     <div class="two-col">
@@ -313,27 +313,29 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
         <div class="chart-wrap" style="height:200px"><canvas id="cycleChart" role="img" aria-label="BTC底部情境機率">機率分配圖。</canvas></div>
         <div class="section-heading">週期路徑</div>
         <div class="price-path">
-          <div class="path-node atop"><div class="path-price">$126K</div><div class="path-label">ATH 10/6/25</div></div>
+          <div class="path-node atop"><div class="path-price">$126K</div><div class="path-label">ATH 2025/10/06</div></div>
           <div class="path-node current"><div class="path-price" id="btc-path-price">—</div><div class="path-label">現在</div></div>
-          <div class="path-node target"><div class="path-price">$60-68K</div><div class="path-label">底部目標</div></div>
+          <div class="path-node target"><div class="path-price">$62-68K</div><div class="path-label">底部目標</div></div>
           <div class="path-node target"><div class="path-price">$120-170K</div><div class="path-label">2027 目標</div></div>
         </div>
       </div>
       <div>
-        <div class="section-heading">關鍵價位（已驗證）</div>
+        <div class="section-heading">關鍵價位 <span style="font-size:10px;color:var(--text3);font-weight:400;letter-spacing:0">更新 2026/05/23</span></div>
         <div class="signal-list">
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線 SMA/EMA</span><span class="signal-val">$82,000–82,500</span><span class="signal-tag bear">7個月未站上</span></div>
-          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">STH 成本線</span><span class="signal-val">~$79,000</span><span class="signal-tag bear">第四次衝關</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">200日均線 SMA200</span><span class="signal-val">~$83,000</span><span class="signal-tag bear">自2026/1未站上</span></div>
+          <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">STH 成本線</span><span class="signal-val">~$79,000</span><span class="signal-tag bear">第四次衝關失敗</span></div>
           <div class="signal-row"><div class="signal-dot bear"></div><span class="signal-name">心理關口</span><span class="signal-val">$80,000</span><span class="signal-tag bear">壓力</span></div>
-          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">128日均線（守住中）</span><span class="signal-val">$75,700</span><span class="signal-tag neu">短期支撐</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">128日均線</span><span class="signal-val">~$75,700</span><span class="signal-tag neu">短期支撐</span></div>
           <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">交易者鏈上成本線</span><span class="signal-val">$70,000</span><span class="signal-tag bear">下一支撐</span></div>
-          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">2月低點</span><span class="signal-val">$60,000</span><span class="signal-tag bull">週期底部參考</span></div>
+          <div class="signal-row"><div class="signal-dot neu"></div><span class="signal-name">FVG 缺口支撐</span><span class="signal-val">$73,000–$74,000</span><span class="signal-tag bear">跌破加速下殺</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">2026/2 低點（已確認）</span><span class="signal-val">$62,000</span><span class="signal-tag bull">週期底部參考</span></div>
+          <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">200週均線</span><span class="signal-val">$59,000–$61,000</span><span class="signal-tag bull">歷史從未跌破</span></div>
           <div class="signal-row"><div class="signal-dot bull"></div><span class="signal-name">LTH 成本線</span><span class="signal-val">~$48,000</span><span class="signal-tag bull">長線底部</span></div>
         </div>
 
       </div>
     </div>
-    <button class="action-btn" onclick="ask('BTC $77400，200日均線$82K（7個月未站上），STH$79K第四次衝關失敗，ETF兩週流出$2B，Bull Score 20，下一支撐$70K。對比2018和2022熊市，分析底部時間Q3還是Q4 2026，底部確認鏈上指標組合，MSTR $149和$122加倉點的風險報酬比')">🤖 深析 BTC 週期 × MSTR 加倉時機 ↗</button>
+    <button class="action-btn" onclick="ask('BTC現價即時，200日均線$83K自2026/1未站上，STH$79K第四次衝關失敗，2026/2低點$62K，ETF 5/11-15週流出$1B打破六週連流入，CPI 4月3.8%為2023/5來最高，Fed升息討論升溫。分析：1)底部在Q3還是Q4 2026，機率各多少？2)$62K低點是否會再測試？3)現在到底部之前最可能的走勢路徑')">🤖 深析 BTC 週期 × MSTR 加倉時機 ↗</button>
   </div>
 
   <!-- ══ PANEL: PORTFOLIO ══ -->
@@ -806,12 +808,13 @@ function saveAll(){
 const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分析。背景（2026/05/22 已驗證）：
 
 【BTC 現況】
-- BTC ~$77,400，ATH $126,198（2025/10/06），熊市第7.5個月
-- 200日均線 $82,000–82,500，7個月未站上，本月再次拒絕
+- BTC ~$75,400，ATH $126,198（2025/10/06），熊市第7.5個月
+- 200日均線（SMA200）~$83,000，自2026/1未站上
 - STH成本線 ~$79,000，第四次衝關失敗
-- 128日均線 $75,700（目前守住），鏈上交易者成本線 $70,000（下一支撐）
-- CryptoQuant Bull Score 20/100（極度看空），NUPL 0.28（回升中）
-- 底部共識：Q3-Q4 2026，$60-68K
+- 2026/2 低點 $62,000，底部共識區間 $60-68K，Q3-Q4 2026
+- CPI 4月 3.8%（2023/5來最高），能源+17.9%，汽油+28.4%
+- Fed 利率 3.50-3.75%，升息討論升溫，2026年幾乎確定不降息
+- ETF 5/11-15週流出 $1B（2月來最大），打破六週連流入
 
 【ETF 數據】
 - 近兩週淨流出 -$2B（六週連流入後反轉）
@@ -824,22 +827,55 @@ const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分
 
 規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
 
-const CLAUDE_KEY='YOUR_API_KEY_HERE';
+const GEMINI_KEY='AIzaSyBenKAxWlr2FVvZMnNo4XbYNlR6QwYaxSM';
+
+async function updateSignalsWithAI(){
+  if(GEMINI_KEY==='YOUR_GEMINI_KEY_HERE')return; // skip if no key
+  try{
+    const prompt=`你是BTC市場分析師。請搜尋今天最新數據，用繁體中文回覆以下JSON格式（只回JSON，不要其他文字）：
+{"sth":"STH成本線目前約多少美元","ma200":"200日均線目前約多少美元","etf":"本週ETF淨流入或流出多少億美元和方向","cpi":"最新CPI數據","fed":"Fed最新利率和立場","nupl":"NUPL指標值","updated":"今天日期YYYY/MM/DD"}`;
+
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{googleSearch:{}}]})
+    });
+    const d=await r.json();
+    const text=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const json=text.match(/\{[\s\S]*\}/)?.[0];
+    if(!json)return;
+    const data=JSON.parse(json);
+
+    // Update signals panel with fresh data
+    updateSignalVal('sig-sth', data.sth);
+    updateSignalVal('sig-ma200', data.ma200);
+    updateSignalVal('sig-etf', data.etf);
+    updateSignalVal('sig-cpi', data.cpi);
+    updateSignalVal('sig-fed', data.fed);
+    updateSignalVal('sig-nupl', data.nupl);
+
+    // Update date stamps
+    document.querySelectorAll('.sig-update-date').forEach(el=>{
+      if(data.updated)el.textContent='更新 '+data.updated;
+    });
+  }catch(e){}
+}
+
+function updateSignalVal(id, val){
+  const el=document.getElementById(id);
+  if(el&&val)el.textContent=val;
+}
 
 async function callClaude(q){
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
+  const fullQ=SYSTEM+'\n\n用戶問題：'+q;
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
     method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':CLAUDE_KEY,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:[{role:'user',content:q}]})
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:fullQ}]}]})
   });
   if(!r.ok)throw new Error('API '+r.status);
   const d=await r.json();
-  return d.content?.[0]?.text||'分析失敗，請稍後再試。';
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'分析失敗，請稍後再試。';
 }
 
 function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
@@ -878,7 +914,7 @@ function askPortfolio(){
 new Chart(document.getElementById('cycleChart'),{
   type:'doughnut',
   data:{
-    labels:['Q3 2026 底部','底部已過','Q4 延後'],
+    labels:['Q3-Q4 2026 底部 45%','2月$62K已底 30%','2027延後 25%'],
     datasets:[{data:[45,35,20],backgroundColor:['#22c87a','#888780','#f05050'],borderWidth:0,hoverOffset:6}]
   },
   options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
@@ -920,6 +956,7 @@ initLabels();
 renderPortfolio();
 fetchPrices();
 setInterval(fetchPrices,60000);
+updateSignalsWithAI();// auto-update signals if Gemini key set
 </script>
 </body>
 </html>
