@@ -2,11 +2,15 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0a0a">
-<title>市場分析中心</title>
+<title>Market Intel</title>
+<meta name="apple-mobile-web-app-title" content="Market Intel">
+<meta name="application-name" content="Market Intel">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230a0a0a'/%3E%3Ctext x='50%25' y='58%25' font-size='100' text-anchor='middle' dominant-baseline='middle' fill='%2322c87a'%3E₿%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Market+Intel%22%2C%22short_name%22%3A%22Market+Intel%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a0a%22%2C%22theme_color%22%3A%22%230a0a0a%22%7D">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -52,7 +56,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
 .panel.active{display:block}
 
 /* BOTTOM NAV */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 20px rgba(0,0,0,0.4)}
 .bottom-nav-inner{display:flex;height:56px;align-items:center}
 .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:var(--sans);padding:6px 0;transition:color .15s;-webkit-tap-highlight-color:transparent}
 .bnav-item.active{color:var(--accent)}
@@ -168,13 +172,26 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
 @media(max-width:768px){
   .sidebar{display:none}
   .bottom-nav{display:flex;flex-direction:column;justify-content:flex-start}
-  .main-content{padding:14px;padding-bottom:calc(56px + env(safe-area-inset-bottom) + 14px)}
-  .metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .main-content{
+    padding:14px;
+    padding-bottom:calc(56px + env(safe-area-inset-bottom) + 20px);
+    -webkit-overflow-scrolling:touch;
+  }
+  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:8px}
   .prompt-grid{grid-template-columns:1fr}
   .two-col{grid-template-columns:1fr}
   .main-header{padding:0 14px}
-  .metric-value{font-size:17px}
+  .metric-value{font-size:16px}
+  .metric{padding:12px}
   .field-grid{grid-template-columns:1fr}
+  .card{padding:12px}
+  .signal-name{font-size:12px}
+  .signal-val{font-size:11px}
+  .exit-table{font-size:11px}
+  .exit-table td,.exit-table th{padding:5px 4px}
+  .action-btn,.prompt-btn{font-size:12px;padding:10px 12px}
+  .ai-box{font-size:13px;padding:14px}
+  .section-heading{font-size:10px}
 }
 @media(min-width:769px) and (max-width:1100px){
   .metrics-grid{grid-template-columns:repeat(2,1fr)}
@@ -784,7 +801,9 @@ function addCash(){
 
 function deleteCash(i){
   DB.cash.splice(i,1);
+  saveDB();
   renderCashEdit();
+  renderPortfolio();
 }
 
 function saveAll(){
@@ -838,7 +857,7 @@ async function updateSignalsWithAI(){
     const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{googleSearch:{}}]})
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})
     });
     const d=await r.json();
     const text=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
@@ -867,15 +886,26 @@ function updateSignalVal(id, val){
 }
 
 async function callClaude(q){
-  const fullQ=SYSTEM+'\n\n用戶問題：'+q;
-  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:[{parts:[{text:fullQ}]}]})
-  });
-  if(!r.ok)throw new Error('API '+r.status);
-  const d=await r.json();
-  return d.candidates?.[0]?.content?.parts?.[0]?.text||'分析失敗，請稍後再試。';
+  const fullQ=SYSTEM+'\n\n問題：'+q;
+  // Try gemini-2.0-flash first, fallback to gemini-1.5-flash
+  const models=['gemini-2.0-flash','gemini-1.5-flash'];
+  for(const model of models){
+    try{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contents:[{parts:[{text:fullQ}]}],
+          generationConfig:{maxOutputTokens:1000,temperature:0.7}
+        })
+      });
+      if(!r.ok){const e=await r.text();console.warn(model,r.status,e);continue;}
+      const d=await r.json();
+      const text=d.candidates?.[0]?.content?.parts?.[0]?.text;
+      if(text)return text;
+    }catch(e){console.warn(model,'failed:',e);}
+  }
+  throw new Error('All models failed');
 }
 
 function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
