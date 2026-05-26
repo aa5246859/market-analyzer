@@ -507,7 +507,76 @@ function tick(){
 tick();setInterval(tick,10000);
 
 /* ══ STORAGE ══ */
-const KEY='mkt_v4';
+const GITHUB_TOKEN='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';
+const GIST_FILENAME='market-intel-data.json';
+let GIST_ID=localStorage.getItem('gist_id')||null;
+
+async function gistLoad(){
+  if(GIST_ID){
+    try{
+      const r=await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+        headers:{'Authorization':'token '+GITHUB_TOKEN,'Accept':'application/vnd.github.v3+json'}
+      });
+      if(r.ok){
+        const d=await r.json();
+        const content=d.files?.[GIST_FILENAME]?.content;
+        if(content){
+          const saved=JSON.parse(content);
+          mergeDB(saved);
+          console.log('Loaded from Gist');
+          return true;
+        }
+      }
+    }catch(e){console.warn('Gist load failed:',e);}
+  }
+  // fallback to localStorage
+  try{
+    const s=localStorage.getItem('mkt_v4');
+    if(s)mergeDB(JSON.parse(s));
+  }catch(e){}
+  return false;
+}
+
+async function gistSave(){
+  const data=JSON.stringify(DB);
+  // also save locally as backup
+  try{localStorage.setItem('mkt_v4',data);}catch(e){}
+  try{
+    if(GIST_ID){
+      // update existing gist
+      const r=await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+        method:'PATCH',
+        headers:{'Authorization':'token '+GITHUB_TOKEN,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+        body:JSON.stringify({files:{[GIST_FILENAME]:{content:data}}})
+      });
+      if(r.ok){console.log('Gist updated');return;}
+    }
+    // create new gist
+    const r=await fetch('https://api.github.com/gists',{
+      method:'POST',
+      headers:{'Authorization':'token '+GITHUB_TOKEN,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+      body:JSON.stringify({description:'Market Intel Data',public:false,files:{[GIST_FILENAME]:{content:data}}})
+    });
+    if(r.ok){
+      const d=await r.json();
+      GIST_ID=d.id;
+      localStorage.setItem('gist_id',GIST_ID);
+      console.log('Gist created:',GIST_ID);
+    }
+  }catch(e){console.warn('Gist save failed:',e);}
+}
+
+function mergeDB(saved){
+  ['mara','mstr','ada'].forEach(sym=>{
+    if(saved[sym]){
+      if(saved[sym].qty)DB[sym].qty=saved[sym].qty;
+      if(saved[sym].cost)DB[sym].cost=saved[sym].cost;
+      if(saved[sym].price)DB[sym].price=saved[sym].price;
+      if(saved[sym].exits&&saved[sym].exits.length>0)DB[sym].exits=saved[sym].exits;
+    }
+  });
+  if(saved.cash&&Array.isArray(saved.cash))DB.cash=saved.cash;
+}
 let DB={
   mara:{qty:1988,cost:8.26,price:null,exits:[{price:20,label:'賣 20%',type:'sell'},{price:24.5,label:'賣 50%',type:'sell'},{price:30,label:'賣 30%',type:'sell'}]},
   mstr:{qty:6,cost:188,price:null,exits:[{price:280,label:'賣 25%',type:'sell'},{price:375,label:'賣 35%',type:'sell'},{price:450,label:'賣 30%',type:'sell'},{price:0,label:'留 10% 長期持有',type:'sell'}]},
@@ -516,26 +585,29 @@ let DB={
 };
 
 function loadDB(){
+  // load from localStorage immediately (fast)
   try{
-    const s=localStorage.getItem(KEY);
-    if(s){
-      const saved=JSON.parse(s);
-      // merge: keep defaults for any missing fields
-      ['mara','mstr','ada'].forEach(sym=>{
-        if(saved[sym]){
-          DB[sym].qty=saved[sym].qty||DB[sym].qty;
-          DB[sym].cost=saved[sym].cost||DB[sym].cost;
-          if(saved[sym].exits&&saved[sym].exits.length>0)DB[sym].exits=saved[sym].exits;
-        }
-      });
-      if(saved.cash)DB.cash=saved.cash;
-    }
+    const s=localStorage.getItem('mkt_v4');
+    if(s)mergeDB(JSON.parse(s));
   }catch(e){}
-  // restore saved manual prices
   ['mara','mstr','ada'].forEach(sym=>{if(DB[sym].price)PRICES[sym]=DB[sym].price;});
+  // then sync from Gist in background
+  gistLoad().then(loaded=>{
+    if(loaded){
+      ['mara','mstr','ada'].forEach(sym=>{if(DB[sym].price)PRICES[sym]=DB[sym].price;});
+      initLabels();
+      renderPortfolio();
+      if(PRICES.mara)updateStockPnl('mara',PRICES.mara);
+      if(PRICES.mstr)updateStockPnl('mstr',PRICES.mstr);
+      if(PRICES.ada)updateCryptoPnl();
+      updateTotalPnl();
+    }
+  });
 }
 function saveDB(){
-  try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}
+  // save locally + sync to Gist
+  try{localStorage.setItem('mkt_v4',JSON.stringify(DB));}catch(e){}
+  gistSave();
 }
 
 /* ══ PRICES ══ */
@@ -887,25 +959,24 @@ function updateSignalVal(id, val){
 
 async function callClaude(q){
   const fullQ=SYSTEM+'\n\n問題：'+q;
-  // Try gemini-2.0-flash first, fallback to gemini-1.5-flash
-  const models=['gemini-2.0-flash','gemini-1.5-flash'];
+  const models=['gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash-latest','gemini-1.5-flash'];
   for(const model of models){
     try{
       const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
-          contents:[{parts:[{text:fullQ}]}],
-          generationConfig:{maxOutputTokens:1000,temperature:0.7}
+          contents:[{role:'user',parts:[{text:fullQ}]}],
+          generationConfig:{maxOutputTokens:1200,temperature:0.7,candidateCount:1}
         })
       });
-      if(!r.ok){const e=await r.text();console.warn(model,r.status,e);continue;}
       const d=await r.json();
+      if(d.error){console.warn(model,'error:',d.error.message);continue;}
       const text=d.candidates?.[0]?.content?.parts?.[0]?.text;
       if(text)return text;
     }catch(e){console.warn(model,'failed:',e);}
   }
-  throw new Error('All models failed');
+  throw new Error('Gemini unavailable');
 }
 
 function fmtAI(t){return t.split(/\n\n+/).filter(p=>p.trim()).map(p=>`<p>${p.trim().replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`).join('');}
