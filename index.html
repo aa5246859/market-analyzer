@@ -23,7 +23,7 @@
   --nav-h:56px;--sidebar-w:240px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.65;height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 .app-shell{display:flex;height:100dvh;overflow:hidden}
 
 /* SIDEBAR */
@@ -173,25 +173,44 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
   .sidebar{display:none}
   .bottom-nav{display:flex;flex-direction:column;justify-content:flex-start}
   .main-content{
-    padding:14px;
-    padding-bottom:calc(56px + env(safe-area-inset-bottom) + 20px);
+    padding:16px;
+    padding-bottom:calc(68px + env(safe-area-inset-bottom) + 16px);
     -webkit-overflow-scrolling:touch;
   }
-  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .metric{padding:14px 12px}
+  .metric-label{font-size:12px}
+  .metric-value{font-size:19px}
+  .metric-sub{font-size:12px}
   .prompt-grid{grid-template-columns:1fr}
   .two-col{grid-template-columns:1fr}
-  .main-header{padding:0 14px}
-  .metric-value{font-size:16px}
-  .metric{padding:12px}
+  .main-header{padding:0 16px;height:52px}
+  .header-title{font-size:16px}
   .field-grid{grid-template-columns:1fr}
-  .card{padding:12px}
-  .signal-name{font-size:12px}
-  .signal-val{font-size:11px}
-  .exit-table{font-size:11px}
-  .exit-table td,.exit-table th{padding:5px 4px}
-  .action-btn,.prompt-btn{font-size:12px;padding:10px 12px}
-  .ai-box{font-size:13px;padding:14px}
-  .section-heading{font-size:10px}
+  .field-item input{font-size:16px;padding:6px 0}
+  .field-item label{font-size:12px}
+  .edit-title{font-size:15px}
+  .card{padding:14px}
+  .signal-row{padding:12px 0}
+  .signal-name{font-size:14px}
+  .signal-val{font-size:12px}
+  .signal-tag{font-size:11px;padding:3px 9px}
+  .exit-table{font-size:13px}
+  .exit-table td,.exit-table th{padding:8px 6px}
+  .action-btn{font-size:14px;padding:13px 16px}
+  .prompt-btn{font-size:14px;padding:14px}
+  .ai-box{font-size:14px;padding:16px;line-height:1.8}
+  .section-heading{font-size:11px;margin-bottom:14px}
+  .port-name{font-size:16px}
+  .port-pnl{font-size:14px}
+  .port-detail{font-size:13px}
+  .bnav-icon{font-size:22px}
+  .bnav-label{font-size:11px}
+  .input-row input{font-size:16px;padding:12px 14px}
+  .input-row button{font-size:14px;padding:12px 18px}
+  .exit-row input{font-size:14px;padding:7px 10px}
+  .add-exit-btn{font-size:14px;padding:10px}
+  .logo-title{font-size:17px}
 }
 @media(min-width:769px) and (max-width:1100px){
   .metrics-grid{grid-template-columns:repeat(2,1fr)}
@@ -232,6 +251,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
     <div class="header-title" id="header-title">AI 即時分析</div>
     <div style="display:flex;align-items:center;gap:10px">
       <button class="refresh-btn" id="refresh-btn" onclick="fetchPrices()">↻ 更新</button>
+      <button class="refresh-btn" onclick="document.getElementById('token-overlay').style.display='flex'" style="padding:4px 8px">⚙️</button>
       <div class="header-time" id="header-time"></div>
     </div>
   </div>
@@ -808,10 +828,8 @@ function renderEditPanel(){
     const d=DB[sym];
     const qEl=document.getElementById('e-'+sym+'-qty');
     const cEl=document.getElementById('e-'+sym+'-cost');
-    const pEl=document.getElementById('e-'+sym+'-price');
-    if(qEl)qEl.value=d.qty;
-    if(cEl)cEl.value=d.cost;
-    if(pEl&&d.price)pEl.value=d.price;
+    if(qEl){qEl.value=d.qty;qEl.placeholder=d.qty;}
+    if(cEl){cEl.value=d.cost;cEl.placeholder=d.cost;}
     renderExitRows(sym);
   });
   renderCashEdit();
@@ -1055,8 +1073,8 @@ function initLabels(){
 function checkTokens(){
   const gh=localStorage.getItem('gh_token');
   const gm=localStorage.getItem('gemini_key');
-  if(gh)GITHUB_TOKEN=gh;
-  if(gm)GEMINI_KEY=gm;
+  if(gh){GITHUB_TOKEN=gh;const el=document.getElementById('input-gh-token');if(el)el.value=gh;}
+  if(gm){GEMINI_KEY=gm;const el=document.getElementById('input-gemini-key');if(el)el.value=gm;}
   if(!gh||!gm){
     document.getElementById('token-overlay').style.display='flex';
   }
