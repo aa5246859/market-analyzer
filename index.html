@@ -926,10 +926,10 @@ async function updateSignalsWithAI(){
     const prompt=`你是BTC市場分析師。請搜尋今天最新數據，用繁體中文回覆以下JSON格式（只回JSON，不要其他文字）：
 {"sth":"STH成本線目前約多少美元","ma200":"200日均線目前約多少美元","etf":"本週ETF淨流入或流出多少億美元和方向","cpi":"最新CPI數據","fed":"Fed最新利率和立場","nupl":"NUPL指標值","updated":"今天日期YYYY/MM/DD"}`;
 
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_KEY}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
     });
     const d=await r.json();
     const text=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
@@ -959,7 +959,7 @@ function updateSignalVal(id, val){
 
 async function callClaude(q){
   const fullQ=SYSTEM+'\n\n問題：'+q;
-  const models=['gemini-2.0-flash-lite','gemini-2.0-flash','gemini-1.5-flash-latest','gemini-1.5-flash'];
+  const models=['gemini-2.5-flash-lite','gemini-2.5-flash','gemini-2.5-pro'];
   for(const model of models){
     try{
       const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,{
