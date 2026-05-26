@@ -24,7 +24,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.65;height:100%;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-.app-shell{display:flex;height:100dvh;overflow:hidden}
+.app-shell{display:flex;height:100dvh;overflow:hidden;max-width:100vw}
 
 /* SIDEBAR */
 .sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
@@ -49,7 +49,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
 .refresh-btn:hover{border-color:var(--border2);color:var(--text)}
 .refresh-btn.spinning{color:var(--amber)}
 .header-time{font-family:var(--mono);font-size:12px;color:var(--text2)}
-.main-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px}
+.main-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:20px;box-sizing:border-box}
 
 /* PANELS */
 .panel{display:none}
@@ -121,9 +121,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
 .progress-fill{height:100%;border-radius:2px;transition:width .3s}
 
 /* EXIT PLAN TABLE */
-.exit-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.exit-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;table-layout:fixed}
 .exit-table th{text-align:left;color:var(--text3);font-weight:500;padding:4px 6px;border-bottom:1px solid var(--border);font-family:var(--mono)}
-.exit-table td{padding:7px 6px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--text2)}
+.exit-table td{padding:8px 6px;border-bottom:1px solid var(--border);font-family:var(--mono);color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .exit-table td:first-child{color:var(--accent);font-weight:500}
 .exit-table tr:last-child td{border-bottom:none}
 .tag-sm{font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px}
@@ -136,14 +136,17 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
 .field-item label{font-size:11px;color:var(--text3);font-family:var(--mono);display:block;margin-bottom:4px}
 .field-item input,.field-item select{background:transparent;border:none;border-bottom:1px solid var(--border2);padding:2px 0;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;width:100%;min-width:0;box-sizing:border-box}
 .field-item input:focus{border-bottom-color:var(--accent)}
-.exit-row{display:grid;grid-template-columns:80px 1fr 70px 28px;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--border)}
+.exit-row{padding:10px 0;border-bottom:1px solid var(--border)}
 .exit-row:last-child{border-bottom:none}
-.exit-row input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;font-family:var(--mono);color:var(--text);outline:none;width:100%;min-width:0}
-.exit-row input:focus{border-color:var(--accent)}
-.exit-row span{font-size:12px;color:var(--text2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.exit-row select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 4px;font-size:11px;color:var(--text2);outline:none;width:100%;min-width:0}
-.exit-row button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0;text-align:center}
-.exit-row button:hover{color:var(--red)}
+.exit-row-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.exit-row-top input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;width:90px;flex-shrink:0}
+.exit-row-top input:focus{border-color:var(--accent)}
+.exit-row-top input.desc{flex:1;width:auto;font-family:var(--sans)}
+.exit-row-bottom{display:flex;align-items:center;gap:8px}
+.exit-row select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;color:var(--text2);outline:none;flex:1}
+.exit-row-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+.exit-row-del:hover{color:var(--red)}
+.exit-row-num{font-size:11px;color:var(--text3);width:20px;flex-shrink:0}
 .add-exit-btn{background:none;border:1px dashed var(--border2);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--text3);cursor:pointer;width:100%;margin-top:8px;font-family:var(--sans);transition:all .15s}
 .add-exit-btn:hover{border-color:var(--accent);color:var(--accent)}
 .save-indicator{font-size:12px;color:var(--green);font-family:var(--mono);text-align:center;height:16px;margin-top:8px}
@@ -209,9 +212,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-si
   .bnav-label{font-size:11px}
   .input-row input{font-size:16px;padding:12px 14px}
   .input-row button{font-size:14px;padding:12px 18px}
-  .exit-row{grid-template-columns:72px 1fr 60px 24px;gap:5px}
-  .exit-row input{font-size:14px;padding:6px 8px}
-  .exit-row select{font-size:11px}
+  .exit-row-top input{font-size:15px}
+  .exit-row-top input.desc{font-size:14px}
+  .exit-row select{font-size:13px;padding:8px}
   .add-exit-btn{font-size:14px;padding:10px}
   .logo-title{font-size:17px}
 }
@@ -844,15 +847,19 @@ function renderExitRows(sym){
   const exits=DB[sym].exits||[];
   el.innerHTML=exits.map((ex,i)=>`
     <div class="exit-row">
-      <span style="font-size:11px;color:var(--text3);width:28px">#${i+1}</span>
-      <input type="number" value="${ex.price}" step="${sym==='ada'?'0.01':'1'}" placeholder="價格 $" onchange="DB['${sym}'].exits[${i}].price=parseFloat(this.value)||0">
-      <input type="text" value="${ex.label}" placeholder="說明" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-family:var(--sans);color:var(--text);outline:none;width:100%;min-width:0;box-sizing:border-box" onchange="DB['${sym}'].exits[${i}].label=this.value">
-      <select onchange="DB['${sym}'].exits[${i}].type=this.value" style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 4px;font-size:11px;color:var(--text2);outline:none;width:100%;min-width:0">
-        <option value="sell" ${ex.type==='sell'?'selected':''}>出場</option>
-        <option value="buy" ${ex.type==='buy'?'selected':''}>加倉</option>
-        <option value="stop" ${ex.type==='stop'?'selected':''}>停損</option>
-      </select>
-      <button onclick="deleteExitRow('${sym}',${i})">×</button>
+      <div class="exit-row-top">
+        <span class="exit-row-num">#${i+1}</span>
+        <input type="number" value="${ex.price||''}" step="${sym==='ada'?'0.01':'1'}" placeholder="價格$" onchange="DB['${sym}'].exits[${i}].price=parseFloat(this.value)||0">
+        <input type="text" class="desc" value="${ex.label||''}" placeholder="說明（例：賣20%）" onchange="DB['${sym}'].exits[${i}].label=this.value">
+        <button class="exit-row-del" onclick="deleteExitRow('${sym}',${i})">×</button>
+      </div>
+      <div class="exit-row-bottom">
+        <select onchange="DB['${sym}'].exits[${i}].type=this.value">
+          <option value="sell" ${ex.type==='sell'?'selected':''}>出場</option>
+          <option value="buy" ${ex.type==='buy'?'selected':''}>加倉</option>
+          <option value="stop" ${ex.type==='stop'?'selected':''}>停損</option>
+        </select>
+      </div>
     </div>`).join('');
 }
 
