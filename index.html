@@ -507,7 +507,7 @@ function tick(){
 tick();setInterval(tick,10000);
 
 /* ══ STORAGE ══ */
-const GITHUB_TOKEN='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';
+let GITHUB_TOKEN=localStorage.getItem('gh_token')||'';
 const GIST_FILENAME='market-intel-data.json';
 let GIST_ID=localStorage.getItem('gist_id')||null;
 
@@ -918,7 +918,7 @@ const SYSTEM=`你是專業宏觀金融分析師，專長加密貨幣大週期分
 
 規則：繁體中文，直接給判斷，無免責聲明，200-400字，具體數字和條件`;
 
-const GEMINI_KEY='AIzaSyBenKAxWlr2FVvZMnNo4XbYNlR6QwYaxSM';
+let GEMINI_KEY=localStorage.getItem('gemini_key')||'';
 
 async function updateSignalsWithAI(){
   if(GEMINI_KEY==='YOUR_GEMINI_KEY_HERE')return; // skip if no key
@@ -1052,6 +1052,26 @@ function initLabels(){
   // total
   e=document.getElementById('total-pnl-top');if(e){e.textContent='載入中';e.className='metric-value neutral';}
 }
+function checkTokens(){
+  const gh=localStorage.getItem('gh_token');
+  const gm=localStorage.getItem('gemini_key');
+  if(gh)GITHUB_TOKEN=gh;
+  if(gm)GEMINI_KEY=gm;
+  if(!gh||!gm){
+    document.getElementById('token-overlay').style.display='flex';
+  }
+}
+function saveTokens(){
+  const gh=document.getElementById('input-gh-token').value.trim();
+  const gm=document.getElementById('input-gemini-key').value.trim();
+  if(!gh||!gm){alert('請填入兩個 key');return;}
+  localStorage.setItem('gh_token',gh);
+  localStorage.setItem('gemini_key',gm);
+  GITHUB_TOKEN=gh;GEMINI_KEY=gm;
+  document.getElementById('token-overlay').style.display='none';
+  loadDB();initLabels();renderPortfolio();fetchPrices();updateSignalsWithAI();
+}
+checkTokens();
 loadDB();
 initLabels();
 renderPortfolio();
@@ -1059,5 +1079,28 @@ fetchPrices();
 setInterval(fetchPrices,60000);
 updateSignalsWithAI();// auto-update signals if Gemini key set
 </script>
+
+<div id="token-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:28px;max-width:420px;width:100%">
+    <div style="font-size:24px;margin-bottom:6px">⚙️</div>
+    <div style="font-size:17px;font-weight:600;color:#f0f0f0;margin-bottom:6px">初次設定</div>
+    <div style="font-size:13px;color:#999;margin-bottom:20px;line-height:1.6">請輸入你的 API Keys，只需設定一次，儲存後不會再問。</div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;color:#555;font-family:monospace;margin-bottom:5px">GITHUB TOKEN（用於跨裝置同步）</div>
+      <input id="input-gh-token" type="password" placeholder="ghp_..." style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:monospace;color:#f0f0f0;outline:none">
+      <div style="font-size:11px;color:#555;margin-top:4px">→ github.com/settings/tokens → gist 權限</div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;color:#555;font-family:monospace;margin-bottom:5px">GEMINI API KEY（用於 AI 分析，免費）</div>
+      <input id="input-gemini-key" type="password" placeholder="AIza..." style="width:100%;background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:monospace;color:#f0f0f0;outline:none">
+      <div style="font-size:11px;color:#555;margin-top:4px">→ aistudio.google.com/apikey</div>
+    </div>
+
+    <button onclick="saveTokens()" style="width:100%;background:#e8e8e8;color:#0a0a0a;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer">儲存並開始使用</button>
+  </div>
+</div>
+
 </body>
 </html>
